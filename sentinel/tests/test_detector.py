@@ -80,6 +80,21 @@ def test_bots_using_the_bank_app_fingerprint_get_fp_asn_and_at_most_stepup():
     assert all(c["key"].startswith(POP.app_fingerprint + "|") for c in entry["clusters"])
 
 
+def test_the_app_fingerprint_stays_protected_at_a_low_customer_rate():
+    """At 10 customer payments a second the app fingerprint sends only about 4 a window, below MIN_COUNT. Its normal
+    customer mix must still be learned, so bots that borrow it get fp_asn clusters and the bare fingerprint is never
+    blocked."""
+    det = Sentinel()
+    for t in range(60):
+        feed_second(det, t, 10)
+    bots = POP.bots(2000, 1, 3, use_app_fp=True)
+    seen = []
+    for t in range(60, 100):
+        seen += feed_second(det, t, 10, bots, 40)["clusters"]
+    assert seen and {c["key_type"] for c in seen} == {"fp_asn"}
+    assert all(c["action"] in ("throttle", "stepup") for c in seen)
+
+
 def test_worker_writes_one_threat_entry_per_second():
     r = fakeredis.FakeRedis(decode_responses=True)
     t = [1000.0]

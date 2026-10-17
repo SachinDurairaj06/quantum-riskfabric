@@ -82,6 +82,17 @@ def test_app_forwards_unchanged_and_counts(tmp_path):
     assert stats["received"] == 2 and stats["passed"] == 1 and stats["stopped"]["waf"] == {"script injection": 1}
 
 
+def test_an_oversized_body_is_refused_without_reaching_the_edge():
+    seen = []
+    app = create_app(upstream="http://edge", transport=httpx.MockTransport(lambda r: seen.append(r) or httpx.Response(200)))
+    with TestClient(app) as c:
+        r = c.post("/pay", content=b"{" + b" " * 20000 + b"}", headers={"Content-Type": "application/json",
+                                                                        "X-Forwarded-For": "198.18.0.1"})
+        stats = c.get("/perimeter/stats").json()
+    assert r.status_code == 403 and r.json() == {"error": "body too large", "layer": "waf"} and seen == []
+    assert stats["received"] == 1 and stats["stopped"]["waf"] == {"body too large": 1}
+
+
 def test_edge_down_is_a_502():
     def upstream(request):
         raise httpx.ConnectError("refused")

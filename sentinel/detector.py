@@ -203,7 +203,10 @@ class Sentinel:
                 share = scored[k]["share"] if k in scored else 0.0
                 self.baseline[k] = (1 - alpha) * self.baseline.get(k, 0.0) + alpha * share
             for k, v in scored.items():
-                if k.startswith("fp:") and v["candidate"] and k not in self.clusters:
+                # learn a fingerprint's normal mix only from windows where it looks normal itself, so a building
+                # attack that borrows the fingerprint can't wear its protection down before it is detected
+                if (k.startswith("fp:") and self.window[k].count >= R.LEARN_MIN_COUNT and k not in self.clusters
+                        and v["score"] < R.BAD_SCORE):
                     self.baseline_known[k] = (1 - alpha) * self.baseline_known.get(k, v["known_share"]) + alpha * v["known_share"]
             if level == "NORMAL":
                 bt = self.baseline_total

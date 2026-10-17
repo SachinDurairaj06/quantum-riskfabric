@@ -9,9 +9,14 @@ every field. Three modes match the three configs:
 - `realistic` (`haproxy.realistic.cfg`): as status quo, plus 429 while a fingerprint's rate over the last second is
   above `cfg:fp_limit_rps`.
 
-Differences from the real edge, on purpose: it applies Sentinel's latest `threat` entry itself every 0.5 s (no
-applier, no maps), and throttle lets a cluster through at THROTTLE_RPS per second with 429 above that. It is not a
-performance reference: the LinuxONE VM runs HAProxy.
+Cluster actions get stricter step by step, never looser (CONTRACTS section 11):
+- throttle lets a cluster through at THROTTLE_RPS per second, with 429 above that;
+- step-up keeps that cap and adds `X-Edge-Action: stepup` to what passes, so a cluster in step-up can't flood the
+  bank's engine. That matters most for protected keys, which never go past step-up;
+- block answers 403.
+
+One difference from the real edge, on purpose: it applies Sentinel's latest `threat` entry itself every 0.5 s (no
+applier, no maps). It is not a performance reference: the LinuxONE VM runs HAProxy.
 """
 from __future__ import annotations
 
@@ -33,7 +38,7 @@ log = logging.getLogger("devstack.edge")
 
 MODES = ("riskfabric", "statusquo", "realistic")
 IP_LIMIT_RPS = 20.0      # stand-in value; D sets the real per-IP limit in the HAProxy configs
-THROTTLE_RPS = 5.0       # per cluster while its action is throttle
+THROTTLE_RPS = 5.0       # default cap per cluster; cfg:cluster_cap_rps overrides it (sized to the bank)
 HEALTH_S, THREAT_S, CFG_S, FLUSH_S = 1.0, 0.5, 1.0, 0.02
 HOP = {"host", "content-length", "connection", "keep-alive", "transfer-encoding", "upgrade", "te", "trailer"}
 # headers only the edge and the router may set; a client that sends them has them removed
@@ -101,6 +106,7 @@ class Edge:
         self.per_ip, self.per_cluster, self.per_fp = Window(), Window(), Sliding()
         self.clusters = ClusterMap()
         self.fp_limit: Optional[float] = None
+        self.cluster_cap = THROTTLE_RPS
         self.log_buffer: list = []
 
     def backends(self) -> list:
@@ -122,8 +128,8 @@ class Edge:
                 cid, action = hit
                 if action == "block":
                     return 403, cid, "block"
-                if action == "throttle" and self.per_cluster.hit(cid, now) > THROTTLE_RPS:
-                    return 429, cid, "throttle"
+                if self.per_cluster.hit(cid, now) > self.cluster_cap:     # throttle and step-up share the cap
+                    return 429, cid, action
                 return None, cid, action
         return None, "", "pass"
 
@@ -156,7 +162,8 @@ async def _threat_forever(edge: Edge, r) -> None:
 async def _cfg_forever(edge: Edge, r) -> None:
     while True:
         try:
-            fp_limit, deadline = await r.mget("cfg:fp_limit_rps", "cfg:deadline_ms")
+            fp_limit, deadline, cap = await r.mget("cfg:fp_limit_rps", "cfg:deadline_ms", "cfg:cluster_cap_rps")
+            edge.cluster_cap = float(cap) if cap else THROTTLE_RPS
             edge.fp_limit = float(fp_limit) if fp_limit else None
             if deadline:
                 edge.deadline_ms = int(float(deadline))

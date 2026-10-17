@@ -83,6 +83,9 @@ def test_cluster_actions_from_the_latest_threat_entry():
     assert edge.gate("198.18.0.4", "fp-old", "1", 100.0) == (None, "", "pass")          # expired
     throttled = [edge.gate(f"198.18.2.{i}", "fp-slow", "1", 200.0)[0] for i in range(int(THROTTLE_RPS) + 1)]
     assert throttled[:-1] == [None] * int(THROTTLE_RPS) and throttled[-1] == 429
+    # step-up is never looser than throttle: the same cap, plus the header on what passes
+    stepped = [edge.gate(f"198.18.3.{i}", "fp-app", "64900", 300.0) for i in range(int(THROTTLE_RPS) + 1)]
+    assert stepped[0] == (None, "c-1", "stepup") and stepped[-1] == (429, "c-1", "stepup")
 
 
 def test_riskfabric_adds_signals_fails_over_and_bypasses():

@@ -128,10 +128,12 @@ class Aggregator:
 
 
 def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[str] = None,
-               repo_dir: str = REPO, bank_transport=None) -> FastAPI:
+               repo_dir: str = REPO, bank_transport=None, perimeter_url: Optional[str] = None,
+               perimeter_transport=None) -> FastAPI:
     offset = int(os.environ.get("RF_PORT_OFFSET", "0"))
     data_dir = data_dir or os.environ.get("RF_DATA", "/srv/riskfabric/data")
     engine_url = engine_url or os.environ.get("RF_ENGINE_URL", f"http://127.0.0.1:{9000 + offset}")
+    perimeter_url = perimeter_url or f"http://127.0.0.1:{8000 + offset}"
     if redis is None:
         import redis.asyncio as aioredis
 
@@ -145,6 +147,7 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
     @contextlib.asynccontextmanager
     async def lifespan(_app):
         holder["http"] = httpx.AsyncClient(base_url=engine_url, transport=bank_transport, timeout=0.5)
+        holder["perimeter"] = httpx.AsyncClient(base_url=perimeter_url, transport=perimeter_transport, timeout=0.5)
         await agg.start()
         task = asyncio.create_task(agg.run())
         try:
@@ -154,6 +157,7 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
             with contextlib.suppress(asyncio.CancelledError):
                 await task
             await holder["http"].aclose()
+            await holder["perimeter"].aclose()
 
     app = FastAPI(title="RiskFabric console", lifespan=lifespan)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
@@ -274,6 +278,26 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
         fail_open = sum(1 for t, entry, posted in agg.bank_flags if t and entry == "channel" and posted)
         return {"books": books, "engine_p99_ms": _pct(list(agg.engine_lat), 0.99), "recent_timeouts": timeouts,
                 "recent_fail_open": fail_open, "reachable": books is not None}
+
+    @app.get("/api/perimeter")
+    async def perimeter():
+        """The perimeter stand-in's own counts (perimeter/README.md); unreachable when no perimeter runs."""
+        try:
+            resp = await holder["perimeter"].get("/perimeter/stats")
+            if resp.status_code == 200:
+                return {"reachable": True, **resp.json()}
+        except httpx.HTTPError:
+            pass
+        return {"reachable": False}
+
+    @app.get("/api/meta")
+    async def meta():
+        """Which system is running (`cfg:system`, set by deploy/start.sh or devstack), for the header."""
+        try:
+            system = await redis.get("cfg:system")
+        except Exception:
+            system = None
+        return {"system": system}
 
     @app.get("/api/shield")
     async def shield():

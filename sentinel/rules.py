@@ -6,7 +6,7 @@ HISTORY_WINDOWS = 10            # rolling horizon for VERIFY completion, HOLD ra
 BASELINE_WINDOWS = 300          # EWMA horizon (5 minutes of NORMAL windows)
 
 # which keys are candidates in a window
-MIN_COUNT = 20                  # at least this many requests in the window
+MIN_COUNT = 10                  # at least this many requests in the window (was 20: blind to slower clusters)
 MIN_SHARE = 0.02                # and at least this share of all requests
 
 # key score (weights sum to 1)
@@ -21,6 +21,8 @@ BAD_SCORE = 0.60                # a window is "bad" for a key at or above this s
 
 # customer protection (prd/04 section 4.2 step 3)
 PROTECTED_KNOWN_SHARE = 0.50    # a fingerprint used mostly by known-good customers is never acted on as a whole
+LEARN_MIN_COUNT = 3             # a fingerprint's normal customer mix is learned from any calm window with this many
+                                # requests, so protection doesn't depend on the traffic rate (MIN_COUNT is for acting)
 
 # escalation with hysteresis (step 5)
 ENTER_BAD = 3                   # throttle after 3 bad windows

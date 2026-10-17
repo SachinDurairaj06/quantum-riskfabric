@@ -28,6 +28,7 @@ main { padding: 16px 20px 40px; max-width: 1400px; margin: 0 auto; }
 .kv b { font-size: 18px; font-variant-numeric: tabular-nums; }
 .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 12px; border: 1px solid currentColor; }
 .lvl-NORMAL { color: var(--normal); } .lvl-SURGE { color: var(--surge); } .lvl-COORDINATED { color: var(--coord); }
+.badge.sys { color: var(--accent); margin-right: 10px; }
 .pass { color: var(--ok); font-weight: 600; } .fail { color: var(--bad); font-weight: 600; } .na { color: var(--muted); }
 .alert { color: var(--bad); font-weight: 600; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }

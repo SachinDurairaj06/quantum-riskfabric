@@ -25,6 +25,33 @@ def make(tmp_path, repo=None):
     return TestClient(app), sync
 
 
+def test_perimeter_panel_and_system_badge(tmp_path):
+    stats = {"received": 10, "passed": 9, "stopped": {"cdn": {}, "waf": {"sql injection": 1}, "gateway": {}}}
+
+    def build(handler):
+        server = fakeredis.FakeServer()
+        app = create_app(redis=fakeredis.FakeAsyncRedis(server=server, decode_responses=True), data_dir=str(tmp_path),
+                         engine_url="http://bank.test", repo_dir=str(tmp_path),
+                         bank_transport=httpx.MockTransport(bank_handler), perimeter_url="http://perimeter.test",
+                         perimeter_transport=httpx.MockTransport(handler))
+        return TestClient(app), fakeredis.FakeRedis(server=server, decode_responses=True)
+
+    client, sync = build(lambda req: httpx.Response(200, json=stats))
+    with client as c:
+        assert c.get("/api/meta").json() == {"system": None}
+        sync.set("cfg:system", "shield")
+        assert c.get("/api/meta").json() == {"system": "shield"}
+        p = c.get("/api/perimeter").json()
+        assert p["reachable"] is True and p["passed"] == 9 and p["stopped"]["waf"] == {"sql injection": 1}
+
+    def down(req):
+        raise httpx.ConnectError("refused")
+
+    client, _ = build(down)
+    with client as c:
+        assert c.get("/api/perimeter").json() == {"reachable": False}
+
+
 def test_pages_and_empty_scoreboard(tmp_path):
     client, _ = make(tmp_path)
     with client as c:

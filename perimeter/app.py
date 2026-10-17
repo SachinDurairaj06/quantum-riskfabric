@@ -19,7 +19,7 @@ import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
 
-from .layers import DEFAULT_IP_RPS, Perimeter, Policy
+from .layers import DEFAULT_IP_RPS, MAX_BODY, Perimeter, Policy
 
 log = logging.getLogger("perimeter")
 
@@ -27,6 +27,20 @@ HOP = {"host", "content-length", "connection", "keep-alive", "transfer-encoding"
        "te", "trailer"}
 PASS_BACK = ("content-type", "retry-after")
 REFRESH_S = 1.0
+
+
+async def read_capped(request: Request) -> Optional[bytes]:
+    """The body, or None as soon as it passes MAX_BODY: an oversized body is never buffered in full."""
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > MAX_BODY:
+        return None
+    chunks, size = [], 0
+    async for chunk in request.stream():
+        size += len(chunk)
+        if size > MAX_BODY:
+            return None
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 async def read_policy(r) -> Policy:
@@ -74,8 +88,12 @@ def create_app(redis=None, upstream: Optional[str] = None, transport=None) -> Fa
 
     @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
     async def gate(path: str, request: Request):
-        body = await request.body()
-        verdict = perimeter.check(request.method, "/" + path, request.headers, body, time.time())
+        body = await read_capped(request)
+        if body is None:
+            perimeter.received += 1
+            verdict = perimeter.stop("waf", "body too large", 403)
+        else:
+            verdict = perimeter.check(request.method, "/" + path, request.headers, body, time.time())
         if verdict:
             status, layer, reason = verdict
             return JSONResponse({"error": reason, "layer": layer}, status_code=status,

@@ -39,6 +39,31 @@ async function loadPanel() {
   $("clusters").innerHTML = cl.length ? "Active clusters: " + cl.map((c) => `<span class="mono">${esc(c.id)}</span> ${esc(c.key_type)} → <b>${esc(c.action)}</b> (share ${fmt(100 * (c.share || 0))}%, risk ${fmt(c.risk, 2)})`).join(" · ") : "No active clusters.";
 }
 
+const SYSTEM_NAMES = { bank_only: "Bank alone", bank_realistic: "Realistic bank", shield: "Bank + Shield",
+  standalone: "Standalone", submitted_design: "Downgrade baseline" };
+
+async function metaBadge() {
+  const d = await get("/api/meta");
+  $("system").textContent = d && d.system ? (SYSTEM_NAMES[d.system] || d.system) : "not set";
+}
+
+async function perimeterPanel() {
+  const d = await get("/api/perimeter");
+  if (!d || !d.reachable) {
+    $("perimeter").innerHTML = "";
+    $("perimeter-note").textContent = "No perimeter running: traffic enters at the edge.";
+    return;
+  }
+  const s = d.stopped || {};
+  const count = (layer) => Object.values(s[layer] || {}).reduce((a, b) => a + b, 0);
+  $("perimeter").innerHTML = kv([["received", fmt(d.received, 0)], ["passed on", fmt(d.passed, 0)],
+    ["stopped", fmt(count("cdn") + count("waf") + count("gateway"), 0)],
+    ["passed share", d.received ? fmt((100 * d.passed) / d.received) + "%" : "–"]]);
+  const reasons = Object.entries(s).flatMap(([layer, r]) => Object.entries(r).map(([why, n]) => `${layer}: ${why} ${fmt(n, 0)}`));
+  $("perimeter-note").textContent = (reasons.length ? reasons.join(" · ") + ". " : "")
+    + "It can't link identities, so bots that each stay under the per-IP rate pass on to the edge.";
+}
+
 async function edgePanel() {
   const d = await get("/api/edge");
   if (!d) return;
@@ -102,8 +127,9 @@ $("verify-btn").addEventListener("click", async () => {
   } catch (e) { $("verify-result").textContent = "verify failed to run"; }
 });
 
-function tick() { loadPanel(); edgePanel(); decisionsPanel(); bankPanel(); ledgerPanel(); }
-tick(); holdsPanel(); shieldPanel();
+function tick() { loadPanel(); perimeterPanel(); edgePanel(); decisionsPanel(); bankPanel(); ledgerPanel(); }
+tick(); holdsPanel(); shieldPanel(); metaBadge();
+setInterval(metaBadge, 5000);
 setInterval(tick, 1000);
 setInterval(holdsPanel, 2000);
 setInterval(shieldPanel, 5000);

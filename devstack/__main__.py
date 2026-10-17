@@ -117,6 +117,8 @@ class Stack:
                 "bank:cfg:fallback_limit": f"{bank['fallback_limit']:g}"})
         if bank["fp_limit_rps"] is not None:
             r.set("cfg:fp_limit_rps", f"{bank['fp_limit_rps']:g}")
+        r.set("cfg:cluster_cap_rps", f"{max(1.0, 0.1 * base_rps):g}")   # 10% of R per cluster, so capped bots never fill the bank
+        r.set("cfg:system", self.system)        # the console's header shows which system is running
         return {"bank_config": bank, "loaded": load(r, self.data)}
 
     def start(self, name: str, args: list, **extra) -> None:

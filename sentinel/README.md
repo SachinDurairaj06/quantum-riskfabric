@@ -14,7 +14,7 @@ Keys:
 - `fp:<fingerprint>`
 - `fp_asn:<fingerprint>|<asn>`
 
-A key is a candidate when it has at least 20 requests and at least 2% of all requests in the window.
+A key is a candidate when it has at least 10 requests and at least 2% of all requests in the window. (It was 20, which left clusters slower than 20 requests a second per key unseen.)
 
 Score, with weights summing to 1:
 | Part | Weight | Signal |
@@ -29,6 +29,7 @@ A window is **bad** for a key at a score of 0.60 or more.
 
 ## Customer protection
 - A fingerprint whose known-client share is 50% or more is never acted on as a whole. The bank's own app is the example. The share used is the larger of the current window's and the fingerprint's baseline in normal windows, so an attack that borrows the app fingerprint can't strip its protection.
+- **How the baseline is learned:** from every calm window where the fingerprint sent at least 3 requests (`LEARN_MIN_COUNT`) and scored below the bad threshold itself. So protection doesn't depend on the traffic rate, and an attack building up on the fingerprint can't wear the protection down before it's detected.
 - For a protected fingerprint, Sentinel acts on `fp_asn` keys instead, and never above step-up.
 - An `fp_asn` key is skipped when its whole (unprotected) fingerprint is already being acted on.
 
@@ -39,6 +40,8 @@ A window is **bad** for a key at a score of 0.60 or more.
 | 5 more bad windows | step-up |
 | 5 more bad windows | block (never for protected keys) |
 | 10 good windows | released |
+
+Each step is at least as strict as the one before at the edge: step-up keeps the throttle's cap and adds `X-Edge-Action: stepup` to what passes (CONTRACTS section 11). Otherwise a cluster in step-up, and every protected key, which stops there, would reach the bank's engine at full rate.
 
 While a cluster is active, `until` is the window time plus 60 s. A cluster missing from the latest `threat` entry is released by D's applier. `risk` is the key's score, clipped to 0 to 1, and is forwarded to the bank engine as `X-Cluster-Risk`. `decline_rate` is the key's HOLD share over the last 10 windows.
 
