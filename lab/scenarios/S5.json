@@ -1,0 +1,29 @@
+{
+  "id": "S5",
+  "duration_s": 210,
+  "warmup_s": 30,
+  "seed": 16,
+  "populations": [
+    {
+      "kind": "replay",
+      "rate_x": 1,
+      "start_s": 0,
+      "stop_s": 210
+    },
+    {
+      "kind": "launder",
+      "rate_rps": 2,
+      "start_s": 30,
+      "stop_s": 180,
+      "identity": "clean"
+    }
+  ],
+  "faults": [
+    {
+      "type": "bank_brownout",
+      "start_s": 60,
+      "stop_s": 150,
+      "factor": 5
+    }
+  ]
+}

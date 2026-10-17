@@ -1,0 +1,5 @@
+{
+  "_comment": "Fault commands the runner starts at a scenario's fault times. Placeholders: {duration_s} and the fault's own fields. lo_delay must be D's loopback-only script (prd/06 D-13); D fills it in. bank_brownout is handled by the runner itself.",
+  "lo_delay": null,
+  "cpu_stress": ["stress-ng", "--cpu", "{workers}", "--timeout", "{duration_s}s"]
+}

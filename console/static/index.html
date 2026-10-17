@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RiskFabric Console</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>Quantum RiskFabric · Console</h1>
+  <div>Load level: <span id="level" class="badge lvl-NORMAL">NORMAL</span>
+    <nav style="display:inline"><a href="/scoreboard">Scoreboard</a></nav></div>
+</header>
+<main>
+  <div class="grid">
+    <section class="panel wide" aria-labelledby="h-load">
+      <h2 id="h-load">1 · Load level timeline (threat stream)</h2>
+      <div id="load-chart"></div>
+      <div class="legend"><span><i style="background:var(--normal)"></i>NORMAL</span><span><i style="background:var(--surge)"></i>SURGE</span><span><i style="background:var(--coord)"></i>COORDINATED</span></div>
+      <div id="clusters" class="muted" style="margin-top:8px"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-edge">
+      <h2 id="h-edge">2 · Requests passed vs shed (edge, last 60 s)</h2>
+      <div id="edge-chart"></div>
+      <div class="legend"><span><i style="background:var(--bar1)"></i>passed</span><span><i style="background:var(--bar2)"></i>throttled (429)</span><span><i style="background:var(--bar3)"></i>blocked (403)</span></div>
+      <div id="edge-totals" class="kv" style="margin-top:8px"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-dec">
+      <h2 id="h-dec">3 · Decisions</h2>
+      <div id="decisions" class="kv"></div>
+      <div id="paths" class="muted" style="margin-top:8px"></div>
+      <div id="hold-alert" style="margin-top:6px"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-lat">
+      <h2 id="h-lat">4 · Latency and deadline</h2>
+      <div id="latency" class="kv"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-bank">
+      <h2 id="h-bank">7 · Bank books (the bank's own record)</h2>
+      <div id="bank" class="kv"></div>
+      <div id="bank-note" class="muted" style="margin-top:6px"></div>
+    </section>
+
+    <section class="panel wide" aria-labelledby="h-hold">
+      <h2 id="h-hold">5 · Hold queue</h2>
+      <p class="research" id="challenger-label">Quantum challenger (research, simulated 8 qubits); does not affect decisions</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Payment</th><th class="num">Amount</th><th class="num">Classical score</th><th class="num">Challenger</th><th>Why held</th></tr></thead>
+        <tbody id="holds"><tr><td colspan="5" class="muted">No held payments yet.</td></tr></tbody>
+      </table></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-ledger">
+      <h2 id="h-ledger">6 · Ledger</h2>
+      <div id="ledger" class="kv"></div>
+      <p><button id="verify-btn" type="button">Verify the chain</button> <span id="verify-result" aria-live="polite"></span></p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-shield">
+      <h2 id="h-shield">8 · Shield agreement (bank engine vs our shadow score)</h2>
+      <div id="shield" class="kv"></div>
+    </section>
+  </div>
+</main>
+<script src="/static/console.js"></script>
+</body>
+</html>

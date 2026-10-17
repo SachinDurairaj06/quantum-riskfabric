@@ -1,0 +1,15 @@
+{
+  "id": "S1",
+  "duration_s": 210,
+  "warmup_s": 30,
+  "seed": 11,
+  "populations": [
+    {
+      "kind": "replay",
+      "rate_x": 1,
+      "start_s": 0,
+      "stop_s": 210
+    }
+  ],
+  "faults": []
+}

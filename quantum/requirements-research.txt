@@ -1,0 +1,9 @@
+# Q-01: the research environment as tested on 2026-10-17 (Windows laptop, Python 3.12.10).
+# On the LinuxONE VM the worker needs only numpy (qiskit is optional there: the numpy circuit is the live backend).
+qiskit==2.6.0
+numpy==2.5.4
+scipy==1.18.1
+pandas==3.0.6
+scikit-learn==1.9.1
+# hardware pilot only (STRETCH): qiskit-ibm-runtime, version pinned when the pilot runs
+# noisy simulation only (STRETCH): qiskit-aer, version pinned when used

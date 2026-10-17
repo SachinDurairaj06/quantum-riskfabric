@@ -1,0 +1,32 @@
+{
+  "id": "S3",
+  "duration_s": 210,
+  "warmup_s": 30,
+  "seed": 13,
+  "populations": [
+    {
+      "kind": "replay",
+      "rate_x": 1,
+      "start_s": 0,
+      "stop_s": 210
+    },
+    {
+      "kind": "bot",
+      "rate_x": 4,
+      "start_s": 60,
+      "stop_s": 180,
+      "identities": 2000,
+      "tool_fps": 1,
+      "networks": 3
+    },
+    {
+      "kind": "cardtest",
+      "rate_x": 0.05,
+      "start_s": 60,
+      "stop_s": 180,
+      "burst_on_s": 5,
+      "burst_off_s": 10
+    }
+  ],
+  "faults": []
+}

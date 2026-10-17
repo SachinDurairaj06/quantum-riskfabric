@@ -1,0 +1,32 @@
+{
+  "id": "S6",
+  "duration_s": 210,
+  "warmup_s": 30,
+  "seed": 17,
+  "populations": [
+    {
+      "kind": "replay",
+      "rate_x": 1.0,
+      "start_s": 0,
+      "stop_s": 210
+    },
+    {
+      "kind": "bot",
+      "rate_x": 4.0,
+      "start_s": 60,
+      "stop_s": 180,
+      "identities": 2000,
+      "tool_fps": 1,
+      "networks": 3,
+      "use_app_fp": true
+    },
+    {
+      "kind": "launder",
+      "rate_rps": 2,
+      "start_s": 60,
+      "stop_s": 180,
+      "identity": "attacker"
+    }
+  ],
+  "faults": []
+}

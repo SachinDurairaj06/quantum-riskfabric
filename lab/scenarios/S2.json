@@ -1,0 +1,28 @@
+{
+  "id": "S2",
+  "duration_s": 210,
+  "warmup_s": 30,
+  "seed": 12,
+  "populations": [
+    {
+      "kind": "replay",
+      "rate_x": 3,
+      "start_s": 0,
+      "stop_s": 210
+    }
+  ],
+  "faults": [
+    {
+      "type": "lo_delay",
+      "start_s": 60,
+      "stop_s": 120,
+      "delay_ms": 20
+    },
+    {
+      "type": "cpu_stress",
+      "start_s": 60,
+      "stop_s": 120,
+      "workers": 1
+    }
+  ]
+}

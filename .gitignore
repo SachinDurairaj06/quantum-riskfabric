@@ -1,0 +1,46 @@
+# secrets and personal files (never commit)
+.env
+.env.*
+*.token
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/hookify.*.local.md
+
+# data, models and runtime state (live in $RF_DATA on the VM, not in git)
+data/
+*.csv
+*.parquet
+*.pkl
+*.joblib
+*.model
+*.onnx
+*.log
+*.pid
+*.sock
+
+# python / node
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# raw experiment output (keep the summaries in eval/results/*.json and eval/RESULTS.md)
+eval/results/raw/
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# planning docs, team pack and AI-assistant rules stay local (not published)
+prd/
+team/
+docs/
+.claude/
+AGENTS.md
+CLAUDE.md
+**/CLAUDE.md

@@ -1,0 +1,4 @@
+# Store and check out every text file with LF: the stack runs on Linux (s390x), and bash scripts break on CRLF.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
