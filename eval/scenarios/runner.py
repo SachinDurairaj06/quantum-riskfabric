@@ -45,7 +45,8 @@ SHOULD = ([(s, "bank_only") for s in ("S2", "S3", "S5", "S6")] + [(s, "bank_real
           + [(s, "standalone") for s in ("S1", "S2", "S3", "S4")]
           + [("S4b", s) for s in ("bank_only", "bank_realistic", "shield")])
 EST_MINUTES = {"bank_only": 4.0, "bank_realistic": 4.0}  # rough per run, incl. reset and start; others 5.5
-TIER_OF_PID = (("haproxy", "edge"), ("decision", "decision"), ("sentinel", "sentinel"), ("bank", "bank"), ("quantum", "quantum"))
+TIER_OF_PID = (("haproxy", "edge"), ("edge-standin", "edge"), ("decision", "decision"), ("sentinel", "sentinel"),
+               ("bank", "bank"), ("quantum", "quantum"), ("perimeter", "perimeter"))
 FAULTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "faults.json")
 
 
@@ -314,6 +315,7 @@ def run_capacity(base_rps: float, slots: int) -> dict:
     reached = (result["legit_sent"] or 0) + (result["attack_sent"] - result["attack_shed"] if result["attack_sent"] else 0)
     cap = capacity_formula(result["cpu_us_per_req"] or {}, reached / total if total else 1.0)
     cap["command"] = f"python -m eval.scenarios.runner capacity --base-rps {base_rps:g}"
+    cap["cores"], cap["host"] = os.cpu_count(), platform.node()   # `python -m perimeter limit` needs both
     result.update({"scenario": "CAP", "capacity": cap})
     with open(os.path.join(RESULTS, f"CAP__shield__{_stamp()}.json"), "w", encoding="utf-8") as fh:
         json.dump(result, fh, indent=1)

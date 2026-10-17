@@ -88,7 +88,9 @@ def compute(truth: list, postings: list, bank_log: list, decisions: list, threat
 
     n_req = len(t)
     n_dec = sum(1 for d in decisions if _f(d.get("ts"), 0) >= window_start)
-    n_bank = sum(1 for e in bank_log if e.get("entry") in ("engine", "channel") and _f(e.get("ts"), 0) >= window_start)
+    # one bank-side request per payment: the channel's own call to the engine logs an engine entry too
+    n_bank = len({e.get("txn_id") for e in bank_log if e.get("entry") in ("engine", "channel")
+                  and _f(e.get("ts"), 0) >= window_start})
     n_hold = sum(1 for d in decisions if d.get("action") == "HOLD" and _f(d.get("ts"), 0) >= window_start)
     denominators = {"edge": n_req, "decision": n_dec, "sentinel": n_req, "bank": n_bank, "quantum": n_hold}
     cpu = {k: (round(1e6 * cpu_s[k] / denominators[k], 2) if cpu_s.get(k) is not None and denominators[k] else None)

@@ -63,8 +63,11 @@ def _txn() -> str:
 
 
 def _pay(client, body=None, headers=None):
-    h = {"X-Request-Id": str(uuid.uuid4()), "X-Forwarded-For": "198.18.0.10", "X-Client-FP": "fp-check0001",
-         "X-Client-ASN": "64512"}
+    """One payment as a well-behaved known customer. Each call uses a different client IP, so the checks' bursts
+    never trip the edge's per-IP limit, and `X-Client-Known: 1` keeps Sentinel from treating the checks as a cluster."""
+    n = uuid.uuid4().int
+    h = {"X-Request-Id": str(uuid.uuid4()), "X-Forwarded-For": f"198.18.{n % 250}.{(n >> 8) % 250 + 1}",
+         "X-Client-FP": "fp-check0001", "X-Client-ASN": "64512", "X-Client-Known": "1"}
     h.update(headers or {})
     return client.post(f"{EDGE}/pay", json=body or dict(SAMPLE, txn_id=_txn()), headers=h)
 
