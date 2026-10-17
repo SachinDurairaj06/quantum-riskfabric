@@ -22,8 +22,11 @@ FORMATS_BOT = ("Credit Card",)
 
 class Lab:
     def __init__(self, scenario: Scenario, run_id: str, system: str, replay_path: str, truth_path: str,
-                 transport: Optional[httpx.AsyncBaseTransport] = None, bot_uses_app_fp: bool = False):
-        self.sc, self.run_id, self.system = scenario, run_id, system
+                 transport: Optional[httpx.AsyncBaseTransport] = None, bot_uses_app_fp: bool = False,
+                 entry: str = "edge"):
+        if entry not in config.ENTRY_PORTS:
+            raise ValueError(f"entry must be one of {', '.join(config.ENTRY_PORTS)}")
+        self.sc, self.run_id, self.system, self.entry = scenario, run_id, system, entry
         self.truth_path, self.transport = truth_path, transport
         self.pop = Population(scenario.seed)
         self.rng = random.Random(scenario.seed + 17)
@@ -143,7 +146,7 @@ class Lab:
         credit = [0.0] * len(sc.pops)
         tasks: set = set()
         with open(self.truth_path, "a", encoding="utf-8") as out:
-            async with httpx.AsyncClient(base_url=config.base_url(), transport=self.transport,
+            async with httpx.AsyncClient(base_url=config.base_url(self.entry), transport=self.transport,
                                          timeout=config.CLIENT_TIMEOUT_S, limits=limits) as client:
                 start = last = loop.time()
                 self.start_ts = time.time()

@@ -5,6 +5,7 @@ import os
 
 TARGET_HOST = "127.0.0.1"
 BASE_PORT = 8080
+ENTRY_PORTS = {"edge": 8080, "perimeter": 8000}   # where the lab enters the chain; both on TARGET_HOST
 MAX_TOTAL_RPS = 2000          # cap per lab process; D may raise it for the VM (prd/04 section 2)
 MAX_IN_FLIGHT = 1000
 CLIENT_TIMEOUT_S = 2.0
@@ -14,12 +15,12 @@ LAB_TOKEN = "lab-ok"
 SYNTHETIC_TXN_START = 900000000
 
 
-def port() -> int:
-    return BASE_PORT + int(os.environ.get("RF_PORT_OFFSET", "0"))
+def port(entry: str = "edge") -> int:
+    return ENTRY_PORTS[entry] + int(os.environ.get("RF_PORT_OFFSET", "0"))
 
 
-def base_url() -> str:
-    return f"http://{TARGET_HOST}:{port()}"
+def base_url(entry: str = "edge") -> str:
+    return f"http://{TARGET_HOST}:{port(entry)}"
 
 
 def lab_rate() -> float:

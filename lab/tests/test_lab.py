@@ -124,6 +124,13 @@ def test_host_is_a_constant_and_cap_refuses(tmp_path):
         asyncio.run(Lab(sc, "x", "shield", str(replay), str(tmp_path / "t.jsonl")).run())
 
 
+def test_entry_only_picks_the_port_on_the_fixed_host(monkeypatch):
+    monkeypatch.setenv("RF_PORT_OFFSET", "5")
+    assert config.base_url() == "http://127.0.0.1:8085" and config.base_url("perimeter") == "http://127.0.0.1:8005"
+    with pytest.raises(ValueError, match="entry"):
+        Lab(load("S1", 10), "x", "shield", "replay.csv", "truth.jsonl", entry="internet")
+
+
 def test_shipped_scenarios_load_and_fit_the_cap():
     for sid in ("S1", "S2", "S3", "S4", "S4b", "S5", "S6"):
         sc = load(sid, 200)
