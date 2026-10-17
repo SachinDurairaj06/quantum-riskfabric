@@ -1,0 +1,9 @@
+{
+  "version": "rules-v1",
+  "note": "Frozen at H8 (prd/03 section 4.3). Change only through C, logged in team/STATUS.md. Never tune after results.",
+  "R1_large_amount": {"retail": 10000, "business": 100000},
+  "R2_velocity": {"min_payments": 10, "window_s": 60},
+  "R3_card_testing": {"min_payments": 5, "max_amount": 5.0, "window_s": 300},
+  "R4_model": {"model": "raw-gbm-v1", "verify_at": null, "hold_at": null},
+  "R5_enrichment": {"hold_at_cluster_risk": 0.8}
+}
