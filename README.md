@@ -24,7 +24,40 @@ Attackers can slow a bank's fraud check down on purpose. A late check still need
 The two diagrams and the adoption phases from [prd/01-product.md](prd/01-product.md) section 4.
 
 ## Architecture (TODO: E and D)
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), the picture in `docs/flowchart/` and the decisions in [docs/adr/ADR-LOG.md](docs/adr/ADR-LOG.md).
+The whole chain, as the demo runs it:
+```
+lab ──> perimeter :8000 ──> edge :8080 ──> Shield router :8001 ──> bank :9000 ──> books
+        CDN, WAF,           limits and      deadline budget,         channel, fraud   vault: sealed IBM
+        API gateway         cluster         cluster signals,         engine, books    sample data
+        (stand-in)          actions         stand-in rules
+                               ▲
+                            Sentinel (cluster detection), ledger, quantum challenger in shadow
+```
+| Folder | What it is |
+|---|---|
+| `perimeter/` | A stand-in for the bank's existing perimeter: a Cloudflare-style CDN and DDoS layer, an AWS-style WAF and an API gateway. Its request ceiling comes only from the capacity measured on the host |
+| `devstack/` | Runs the whole chain on one laptop, with a Python stand-in for the HAProxy edge |
+| `decision/` | The Shield router and decision service, with the stand-in rules |
+| `sentinel/` | Finds coordinated clusters every second |
+| `bank/` | The synthetic bank: customer channel, incumbent fraud engine (rules R0 to R5, fixed capacity) and core books |
+| `vault/` | The bank's sealed data store: IBM's Jupyter Lab sample files for LinuxONE, hashed, verified and turned into the bank's accounts |
+| `ledger/` | The hash-chained decision ledger and its verifier |
+| `console/` | The live console and the scoreboard |
+| `quantum/` | The experimental quantum challenger and its gate |
+| `lab/` | The traffic lab: labelled synthetic traffic to 127.0.0.1 only, at a capped rate |
+| `eval/` | Checks, the scenario runner and the metrics |
+
+## Run the whole chain on a laptop
+1. Copy IBM's Jupyter Lab sample files ([linuxone-community-cloud/jupyter-lab-ml](https://github.com/linuxone-community-cloud/jupyter-lab-ml); the files come with its Jupyter Lab environment on the LinuxONE VM) into `data/vault/`. Keep `sample_data/` as a subfolder. Git ignores `data/`.
+2. Run:
+   ```bash
+   python -m vault seal
+   python -m vault build
+   python -m devstack demo --system shield
+   ```
+   The demo starts every service on 127.0.0.1, sends the normal-day scenario through the perimeter for 90 s at a capped rate, prints the numbers and stops. `--system bank_only` and `--system bank_realistic` run the same chain without RiskFabric.
+
+A laptop run is a working check, not a measurement. Results come from the LinuxONE VM.
 
 ## Results (TODO: C)
 From `eval/RESULTS.md`:
@@ -63,6 +96,9 @@ Keep only what we actually used.
 - [scikit-learn](https://scikit-learn.org/) and [LightGBM](https://lightgbm.readthedocs.io/)
 - [IBM Z Accelerated for Snap ML](https://github.com/IBM/ibmz-accelerated-for-snapml)
 - [IBM Transactions for Anti Money Laundering (AML)](https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml)
+- [IBM LinuxONE Community Cloud Jupyter Lab samples](https://github.com/linuxone-community-cloud/jupyter-lab-ml) (the vault's data)
+- [pandas](https://pandas.pydata.org/) and [numpy](https://numpy.org/)
+- [fakeredis](https://github.com/cunla/fakeredis-py) (tests, and devstack's in-memory Valkey on laptops)
 - [Qiskit](https://github.com/Qiskit/qiskit) and [Qiskit Aer](https://github.com/Qiskit/qiskit-aer) (quantum challenger)
 - [pytest](https://docs.pytest.org/) and [Podman](https://podman.io/) if used
 

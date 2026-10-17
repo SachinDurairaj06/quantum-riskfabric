@@ -230,6 +230,8 @@ class Service:
         return isinstance(exc, asyncio.TimeoutError) or (unavailable is not None and isinstance(exc, unavailable))
 
     async def shadow_job(self, payment: dict, signals: dict, req_id: str, held: bool) -> None:
+        if not self.model_loaded:   # Shield mode runs without A's model; /health already reports why
+            return
         try:
             res = await self.score(payment, signals, SHADOW_TIMEOUT_MS)
         except Exception as exc:
