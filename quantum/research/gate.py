@@ -7,9 +7,9 @@ MIN_GAIN = 0.02
 SANITY_TOLERANCE = 0.03
 MAX_WORKER_P99_MS = 1000.0
 
-NO_ADVANTAGE = ("No advantage found. On HI-Small, our 8-qubit quantum challenger did not beat classical controls with "
+NO_ADVANTAGE = ("No advantage found. On the bank data, our 8-qubit quantum challenger did not beat classical controls with "
                 "the same inputs (details and intervals in RESULTS.md).")
-PASS_TEMPLATE = ("On HI-Small, our 8-qubit quantum feature map, simulated exactly on LinuxONE, beat matched classical "
+PASS_TEMPLATE = ("On the bank data, our 8-qubit quantum feature map, simulated exactly on LinuxONE, beat matched classical "
                  "controls by {gain:.1f} points of recall at analyst capacity (95% interval {lo:.1f} to {hi:.1f}, {k} of {k} "
                  "seeds). This is a useful feature map for this data, not a quantum computational advantage: the circuit "
                  "is small enough to simulate classically.")

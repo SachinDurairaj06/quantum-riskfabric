@@ -146,7 +146,9 @@ function renderCapacity() {
 // Model quality: the bank's rules alone (what a bank runs today), the plain model and ours, on the same test rows.
 function renderModel() {
   const m = SUMMARY.model;
-  if (!m || !m.gfp_gbm) { $("model").innerHTML = `<p class="note">not run: <span class="mono">python -m scoring train --source hi_small --path …</span></p>`; return; }
+  const DATA = { cards: "IBM LinuxONE bank card data", hi_small: "IBM HI-Small AML", replay: "replay file" };
+  if (m && m.data_source && $("h-model")) $("h-model").innerHTML = `Model quality <small>${esc(DATA[m.data_source] || m.data_source)}, time-ordered test split${m.rows ? `, ${Number(m.rows.test).toLocaleString()} test payments` : ""}</small>`;
+  if (!m || !m.gfp_gbm) { $("model").innerHTML = `<p class="note">not run: <span class="mono">python -m scoring train --source cards --path …</span></p>`; return; }
   const f3 = num(3);
   const row = (n, x, ours) => `<tr><td>${ours ? `<b>${esc(n)}</b>` : esc(n)}</td><td class="num">${esc(pct(x.precision) || "-")}</td><td class="num">${esc(pct(x.recall) || "-")}</td>
     <td class="num">${esc(f3(x.f1) || "-")}</td><td class="num">${esc(f3(x.pr_auc) || "-")}</td><td class="num">${esc(pct(x.recall_at_1pct) || "-")}</td></tr>`;
@@ -167,12 +169,12 @@ function renderSetup(info) {
   $("empty").innerHTML = `<div class="bento">
     <section class="card s-7"><div class="card-h"><h2>No scenario results yet <small>the matrix fills from eval/results/summary.json</small></h2></div>
       <ol class="steps">
-        ${step(haveModel, "Train the classical model", "python -m scoring train --source hi_small --path $RF_DATA/replay/HI-Small_Trans.csv --max-rows 500000")}
-        ${step(false, "Export the quantum candidates", "python -m scoring export --source hi_small --path $RF_DATA/replay/HI-Small_Trans.csv --max-rows 500000")}
+        ${step(haveModel, "Train the classical model", "python -m scoring train --source cards --path $RF_DATA/vault/transactions_history.csv --max-rows 500000")}
+        ${step(false, "Export the quantum candidates", "python -m scoring export --source cards --path $RF_DATA/vault/transactions_history.csv --max-rows 500000")}
         ${step(false, "Run the scenario matrix", "eval/scenarios/run_all.sh 200", info.deploy_present === false ? "Needs deploy/start.sh, stop.sh and reset.sh, which are not in this repo yet." : "")}
         ${step(false, "Rebuild this page's data", "python -m eval.scenarios.summary")}
       </ol></section>
-    <section class="card s-5"><div class="card-h"><h2>Model quality <small>from scoring/report.json</small></h2></div><div id="model"></div></section></div>`;
+    <section class="card s-5"><div class="card-h"><h2 id="h-model">Model quality <small>from scoring/report.json</small></h2></div><div id="model"></div></section></div>`;
   SUMMARY = { model: info.model };
   renderModel();
 }

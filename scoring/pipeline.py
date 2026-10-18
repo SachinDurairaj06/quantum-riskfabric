@@ -116,7 +116,8 @@ def train(source: str, path: str, model_dir: str, backend=None, hold_cap: float 
                         "files": [f"{GFP_MODEL}.model.json", f"{RAW_MODEL}.model.json"]}
     with open(report_path, "w", encoding="utf-8") as fh:
         json.dump({"gfp_gbm": report["gfp_gbm"], "raw_gbm": report["raw_gbm"], "rules_only": report["rules_only"],
-                   "p99_ms": None, "synthetic": report["synthetic"]}, fh, indent=1)
+                   "p99_ms": None, "synthetic": report["synthetic"], "data_source": source,
+                   "rows": report["rows"], "positives": report["laundering"]}, fh, indent=1)
     return report
 
 
