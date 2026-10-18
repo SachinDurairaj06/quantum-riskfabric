@@ -44,3 +44,6 @@ docs/
 AGENTS.md
 CLAUDE.md
 **/CLAUDE.md
+
+# generated model report (real numbers come from the VM; never commit synthetic ones)
+scoring/report.json
