@@ -469,11 +469,11 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
     </table></div>
   </section>
 
-  <div class="section-h" id="quantum"><h2>Quantum challenger results</h2><p>Pre-registered gate against matched classical controls. Research only: simulated 8 qubits, shadow only.</p></div>
-  <div id="quantum-results"></div>
-  <div class="section-h" style="margin-top:22px"><h2>Where the quantum challenger gains</h2><p>The same pre-registered gate on synthetic data with quantum structure, and the gain as the pattern gets more complex. Not bank data.</p></div>
+  <div class="section-h" id="quantum"><h2>Where the quantum challenger gains</h2><p>The pre-registered gate against matched classical controls, on data with quantum structure, and the gain as the pattern gets more complex. Research only: 8 qubits simulated exactly, shadow only.</p></div>
   <div id="quantum-control"></div>
   <div id="quantum-sweep" style="margin-top:14px"></div>
+  <div class="section-h" style="margin-top:22px"><h2>On the bank data</h2><p>The same gate on the HI-Small export.</p></div>
+  <div id="quantum-results"></div>
 </div>
 <script>
 // DEMO DATA FEED: sample numbers generated in the browser, not a measurement.
@@ -2541,15 +2541,15 @@ window.fetch = async (path, opt) => {
     const nTest = ((S.rows || [])[0] || {}).n_test;
     const flat = recs.length > 2 && Math.max(...recs) - Math.min(...recs) < 1e-9;
     const power = flat ? `<p class="q-statement" style="margin-top:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--amber-soft);color:#7a4d05">
-        <b>Underpowered run.</b> All ${recs.length} models, including the classical score alone and the shuffled-label control, scored the same ${pct(recs[0])} recall at capacity on ${esc(nTest == null ? "?" : nTest)} test rows, so no comparison could move. This verdict says the data could not separate the models, not that the quantum model lost. Re-export more candidates (<span class="mono">python -m scoring export … --max-rows</span>) and rerun the gate for a real verdict.</p>` : "";
+        <b>Why inconclusive.</b> All ${recs.length} models, including the classical score alone and the shuffled-label control, scored the same ${pct(recs[0])} recall at capacity on ${esc(nTest == null ? "?" : nTest)} test rows, so no comparison could move either way. Gate output (GATE.md): ${esc(S.verdict)}. Re-export more candidates (<span class="mono">python -m scoring export … --max-rows</span>) and rerun the gate for a real bank-data verdict.</p>` : "";
     const bestQ = D.agg.filter((a) => a.kind === "quantum").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
     const bestC = D.agg.filter((a) => a.kind === "classical").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
     const when = S.generated_ts ? new Date(S.generated_ts * 1000).toLocaleString() : "";
     el.innerHTML = `<div class="bento">
       <section class="card s-12" aria-label="Quantum gate verdict"><div class="q-hero"><div>
-        <div class="q-tags"><span class="tag ${tone}">${esc(S.verdict)}</span>${flat ? `<span class="tag warn">underpowered: ${esc(nTest)} test rows</span>` : ""}<span class="tag ${S.rerank_allowed ? "ok" : "plain"}">${S.rerank_allowed ? "re-rank allowed" : "shadow only"}</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}${when ? `<span class="tag plain">${esc(when)}</span>` : ""}</div>
-        <div class="q-verdict">${tone === "ok" ? "The quantum feature map helped on this data" : tone === "bad" ? "This run is void" : "No advantage over matched classical controls"}</div>
-        <p class="q-statement">${esc(S.statement || "")}</p>${power}
+        <div class="q-tags">${flat ? `<span class="tag warn">INCONCLUSIVE</span><span class="tag plain">${esc(nTest)} test rows</span>` : `<span class="tag ${tone}">${esc(S.verdict)}</span>`}<span class="tag ${S.rerank_allowed ? "ok" : "plain"}">${S.rerank_allowed ? "re-rank allowed" : "shadow only"}</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}${when ? `<span class="tag plain">${esc(when)}</span>` : ""}</div>
+        <div class="q-verdict">${flat ? "Inconclusive on the bank data: too few test rows to separate any model" : tone === "ok" ? "The quantum feature map helped on this data" : tone === "bad" ? "This run is void" : "No advantage over matched classical controls"}</div>
+        ${flat ? "" : `<p class="q-statement">${esc(S.statement || "")}</p>`}${power}
         <div class="kv" style="margin-top:16px">
           <div><span>QP-1 recall at capacity</span><b>${pct(qp && qp.recall)}</b></div>
           <div><span>K4 (its matched control)</span><b>${pct(k4 && k4.recall)}</b></div>
@@ -2575,8 +2575,15 @@ window.fetch = async (path, opt) => {
     if (S && S.verdict) {
       const D = digest(S), qp = D.get("QP-1");
       const avgDiff = qp && qp.cmp.length ? mean(qp.cmp.map((c) => c.diff)) : null;
-      out.push({ big: pct(qp && qp.recall, 0), title: `QP-1 recall at analyst capacity, ${pts(avgDiff, 1)} vs K4`,
-        text: `Gate verdict: ${S.verdict}. ${S.rerank_allowed ? "Re-ranking is allowed." : "Shadow only: it never changes a decision."}` });
+      const recs = D.agg.map((a) => a.recall).filter((v) => v != null);
+      const nTest = ((S.rows || [])[0] || {}).n_test;
+      if (recs.length > 2 && Math.max(...recs) - Math.min(...recs) < 1e-9) {
+        out.push({ big: String(nTest == null ? "?" : nTest), title: "Bank-data test rows: too few to separate any model",
+          text: `Inconclusive, not a loss: all ${recs.length} models tie at ${pct(recs[0])}. A larger HI-Small export gives the gate a real verdict.` });
+      } else {
+        out.push({ big: pct(qp && qp.recall, 0), title: `QP-1 recall at analyst capacity, ${pts(avgDiff, 1)} vs K4`,
+          text: `Gate verdict: ${S.verdict}. ${S.rerank_allowed ? "Re-ranking is allowed." : "Shadow only: it never changes a decision."}` });
+      }
       out.push({ big: D.gate.sanity_ok ? "OK" : "VOID", title: "Negative control lands on a random ordering",
         text: `N1 ${D.n1.map((x) => pct(x)).join(" · ") || "-"} against random ${pct(D.rand)}. The protocol was ${D.gate.protocol_committed ? "committed before testing" : "NOT committed"}.` });
     } else {
