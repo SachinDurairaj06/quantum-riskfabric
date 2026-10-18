@@ -59,7 +59,8 @@ def test_gateway_ceiling_and_schema():
     assert check(p, now=11.0) is None                                        # the bucket refills
     bad = Perimeter()
     assert check(bad, body=dict(PAY, amount=-1))[:2] == (400, "gateway")
-    assert check(bad, body=dict(PAY, txn_id="x"))[:2] == (400, "gateway")
+    assert check(bad, body=dict(PAY, txn_id=""))[:2] == (400, "gateway")              # empty id rejected
+    assert check(bad, body=dict(PAY, txn_id="sim-1760-5")) is None                     # other sources' ids pass
     assert check(bad, body=dict(PAY, currency="usd"))[:2] == (400, "gateway")
     assert check(bad, body={"txn_id": "t-000000001", "token": "lab-ok"}, path="/verify") is None
 

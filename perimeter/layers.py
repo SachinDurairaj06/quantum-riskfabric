@@ -26,7 +26,9 @@ SIGNATURES = {
     "script injection": re.compile(r"(?i)(<\s*script|javascript\s*:|on(error|load)\s*=)"),
     "path traversal": re.compile(r"\.\./|\.\.\\"),
 }
-TXN_ID = re.compile(r"^t-\d{9}$")
+# any sane id: a real gateway checks the shape, not the lab's own numbering, so other traffic sources (the attack
+# simulator uses ids like sim-...-5) pass too. The bank and edge already accept any string id.
+TXN_ID = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 CURRENCY = re.compile(r"^[A-Z]{3}$")
 
 
@@ -91,7 +93,7 @@ def _number(v) -> bool:
 def schema_error(path: str, body: dict) -> Optional[str]:
     if path == "/verify":
         if not (isinstance(body.get("txn_id"), str) and TXN_ID.match(body["txn_id"])):
-            return "txn_id must look like t-000000000"
+            return "txn_id must be 1-64 chars of letters, digits, dot, underscore or hyphen"
         return None if isinstance(body.get("token"), str) and len(body["token"]) <= 64 else "token must be a string"
     if not (isinstance(body.get("txn_id"), str) and TXN_ID.match(body["txn_id"])):
         return "txn_id must look like t-000000000"
