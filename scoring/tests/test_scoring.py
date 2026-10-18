@@ -105,6 +105,17 @@ def test_policy_is_tuned_to_the_hold_cap(trained):
     assert held <= 0.05                                           # ~2% cap, with headroom for a small sample
 
 
+def test_report_puts_the_bank_rules_alone_beside_the_models(trained):
+    saved = json.load(open(os.path.join(trained["dir"], "report.json")))
+    for key in ("gfp_gbm", "raw_gbm", "rules_only"):
+        m = saved[key]
+        assert {"f1", "precision", "recall", "flag_rate"} <= set(m) and 0 <= m["precision"] <= 1 and 0 <= m["recall"] <= 1
+    assert saved["rules_only"]["pr_auc"] is None                  # the rules give a decision, not a ranking
+    # the synthetic payments are under every rule's limits (no velocity, card testing or large amounts), so the
+    # rules alone flag nothing here; the models still rank the laundering fan-outs
+    assert saved["rules_only"]["flag_rate"] == 0.0 and saved["gfp_gbm"]["pr_auc"] > 0
+
+
 def test_export_writes_exactly_what_the_gate_reads(trained):
     out_dir = os.path.join(trained["dir"], "features")
     summary = pipeline.export("replay", trained["src"], out_dir, trained["model_dir"])

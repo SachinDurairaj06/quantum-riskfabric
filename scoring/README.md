@@ -22,6 +22,8 @@ python -m scoring export --source <hi_small|cards|replay> --path FILE   # write 
 ```
 - **Sources:** `hi_small` (IBM's `HI-Small_Trans.csv`, the VM), `cards` (the vault's sealed card file), `replay` (any
   `txn_id,ts,from_acct,to_acct,amount,currency,format,label` CSV).
+- **Report:** `scoring/report.json` has precision, recall, F1, PR-AUC and recall at top 1% on the test split for
+  `gfp-gbm-v1`, `raw-gbm-v1` and the bank's rules alone (`rules_only`), side by side. The scoreboard shows all three.
 - **Models** go to `$RF_DATA/models/` (`gfp-gbm-v1`, `raw-gbm-v1`, `history.csv`, `feature_stats.json`).
 - **Export** writes `$RF_DATA/features/qml_candidates.csv` and `qml_capacity.csv` to exactly the columns the quantum
   gate reads (CONTRACTS section 13): the top 2% of each day by `gfp-gbm-v1` score, val and test, in time order.

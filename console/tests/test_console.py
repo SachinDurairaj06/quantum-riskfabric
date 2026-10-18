@@ -57,6 +57,9 @@ def test_pages_and_empty_scoreboard(tmp_path):
     with client as c:
         assert "Console" in c.get("/").text
         assert "Evaluation matrix" in c.get("/scoreboard").text
+        for page in ("/", "/scoreboard"):                       # both pages draw quantum results with the shared script
+            assert "/static/quantum.js" in c.get(page).text
+        assert "renderResults" in c.get("/static/quantum.js").text
         r = c.get("/api/results/summary")
         assert r.status_code == 404 and r.json()["empty"] is True
         assert c.get("/api/quantum/summary").status_code == 404

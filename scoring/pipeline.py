@@ -3,7 +3,8 @@
 `build_features` replays every transaction in time order through one `GraphState`, so each row's features use only
 earlier payments and match what `score()` computes live. `train` fits `gfp-gbm-v1` (all features) and `raw-gbm-v1`
 (raw features only) on the train split, tunes `policy.json` thresholds on the validation split to the hold-rate cap,
-and writes a report. `export` scores the validation and test candidates and writes `qml_candidates.csv` and
+and writes a report. The report also scores the bank's own rules alone (R1 to R3, `bank/rules.py`) on the same test
+rows, so it shows what the models add over the rules a bank already runs. `export` scores the validation and test candidates and writes `qml_candidates.csv` and
 `qml_capacity.csv` to exactly the columns the quantum gate reads.
 
 Numbers from synthetic look-alike data only check that the pipeline runs; real metrics come from HI-Small on the VM.
@@ -114,8 +115,8 @@ def train(source: str, path: str, model_dir: str, backend=None, hold_cap: float 
     report["models"] = {"dir": model_dir, "backend": gfp.backend.name,
                         "files": [f"{GFP_MODEL}.model.json", f"{RAW_MODEL}.model.json"]}
     with open(report_path, "w", encoding="utf-8") as fh:
-        json.dump({"gfp_gbm": report["gfp_gbm"], "raw_gbm": report["raw_gbm"], "p99_ms": None,
-                   "synthetic": report["synthetic"]}, fh, indent=1)
+        json.dump({"gfp_gbm": report["gfp_gbm"], "raw_gbm": report["raw_gbm"], "rules_only": report["rules_only"],
+                   "p99_ms": None, "synthetic": report["synthetic"]}, fh, indent=1)
     return report
 
 
@@ -145,12 +146,46 @@ def _recall_at_1pct(y: np.ndarray, score: np.ndarray) -> float:
     return float(y[top].sum()) / float(y.sum())
 
 
+def _flagged(y: np.ndarray, flag: np.ndarray) -> dict:
+    """Precision and recall of the payments flagged (held or sent to verify) against the laundering labels."""
+    hit = int((flag & (y == 1)).sum())
+    return {"precision": round(hit / int(flag.sum()), 4) if flag.sum() else 0.0,
+            "recall": round(hit / int(y.sum()), 4) if y.sum() else 0.0,
+            "flag_rate": round(float(flag.mean()), 4) if len(flag) else 0.0}
+
+
 def _metrics(y, score, threshold) -> dict:
     from sklearn.metrics import average_precision_score
 
     return {"f1": round(_minority_f1(y, score, threshold), 4),
             "pr_auc": round(float(average_precision_score(y, score)) if y.sum() else 0.0, 4),
-            "recall_at_1pct": round(_recall_at_1pct(y, score), 4)}
+            "recall_at_1pct": round(_recall_at_1pct(y, score), 4),
+            **_flagged(y, (score >= threshold))}
+
+
+class _KnownAccounts:
+    """Offline, every account in the data is a customer of the bank, so R0 (unknown account) never fires."""
+
+    def segment(self, acct: str) -> str:
+        return "retail"
+
+
+def rules_only(df: pd.DataFrame, mask: np.ndarray) -> dict:
+    """The bank's rules R1 to R3 on their own, replayed over the whole table in time order (their windows need the
+    history), scored on the rows in `mask`. No model (R4) and no RiskFabric signals (R5): what the bank has today."""
+    from sklearn.metrics import f1_score
+
+    from bank.rules import Rules, load_spec
+
+    rules = Rules(load_spec(), _KnownAccounts())
+    flag = np.zeros(len(df), dtype=bool)
+    for i, (acct, ts, amount) in enumerate(zip(df["from_acct"].to_numpy(), df["ts"].to_numpy(dtype=float),
+                                               df["amount"].to_numpy(dtype=float))):
+        flag[i] = rules.evaluate({"from_acct": acct, "ts": ts, "amount": amount})[0] != "ALLOW"
+    y = df["label"].to_numpy()[mask]
+    flag = flag[mask]
+    return {"f1": round(float(f1_score(y, flag.astype(int), zero_division=0)) if y.sum() else 0.0, 4),
+            "pr_auc": None, "recall_at_1pct": None, **_flagged(y, flag)}
 
 
 def _report(source, df, X, gfp, raw, is_test, y, hold_at) -> dict:
@@ -161,7 +196,8 @@ def _report(source, df, X, gfp, raw, is_test, y, hold_at) -> dict:
             "rows": {"total": int(len(df)), "train": int((df["split"] == "train").sum()),
                      "val": int((df["split"] == "val").sum()), "test": int(is_test.sum())},
             "laundering": {"total": int(y.sum()), "test": int(yte.sum())},
-            "gfp_gbm": _metrics(yte, gfp_te, hold_at), "raw_gbm": _metrics(yte, raw_te, hold_at)}
+            "gfp_gbm": _metrics(yte, gfp_te, hold_at), "raw_gbm": _metrics(yte, raw_te, hold_at),
+            "rules_only": rules_only(df, is_test)}
 
 
 def export(source: str, path: str, out_dir: str, model_dir: str, max_rows: Optional[int] = None) -> dict:

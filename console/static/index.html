@@ -7,97 +7,171 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<div class="bar" role="banner">
-  <div class="brand"><span class="dot" title="live"></span><b>RiskFabric</b><span class="brand-sub">/ console</span></div>
-  <div class="seg" id="window-seg" role="group" aria-label="Time window">
-    <button type="button" data-win="60" class="is-active">60s</button>
-    <button type="button" data-win="300">5m</button>
-    <button type="button" data-win="900">15m</button>
-    <button type="button" data-win="3600">1h</button>
-  </div>
-  <div class="bar-status">
-    <span class="meta">System</span><span id="system" class="badge sys">not set</span>
-    <span class="meta">Load</span><span id="level" class="badge lvl-NORMAL">NORMAL</span>
-    <a class="sb-link" href="/scoreboard">Scoreboard →</a>
-  </div>
-</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-more" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12.5" cy="8" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 16 16"><path d="M8 1.5l1.4 4.1 4.1 1.4-4.1 1.4L8 12.5 6.6 8.4 2.5 7l4.1-1.4zM13 11l.6 1.4 1.4.6-1.4.6L13 15l-.6-1.4L11 13l1.4-.6z" fill="currentColor"/></symbol>
+  <symbol id="i-board" viewBox="0 0 16 16"><path d="M2.5 13.5h11M4.5 11V7M8 11V3.5M11.5 11V6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 1.8l5 1.9v4c0 3.1-2.1 5.5-5 6.5-2.9-1-5-3.4-5-6.5v-4z" fill="#fff"/></symbol>
+</svg>
 
-<main>
-  <div class="grid">
-    <section class="panel wide" aria-labelledby="h-load">
-      <h2 id="h-load">Load level timeline <span class="win">last 60&nbsp;s</span><span class="hint">Sentinel, one reading a second</span></h2>
-      <div id="load-chart" class="chart"></div>
+<div class="frame">
+  <header class="top" role="banner">
+    <a class="logo" href="/" aria-label="RiskFabric console home"><span class="logo-mark"><svg><use href="#i-shield"/></svg></span>riskfabric<small>console</small></a>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <a href="#overview" class="is-active">Overview</a>
+      <a href="#operations">Operations</a>
+      <a href="#holds-sec">Hold queue</a>
+      <a href="#quantum">Quantum</a>
+      <a href="#ledger-card">Ledger</a>
+      <a href="/scoreboard">Scoreboard</a>
+    </nav>
+    <div class="top-right">
+      <span id="level" class="tag lvl-NORMAL" title="Sentinel load level">NORMAL</span>
+      <a class="icon-btn" href="/scoreboard" title="Scoreboard" aria-label="Scoreboard"><svg><use href="#i-board"/></svg></a>
+      <span class="live" title="Live: panels refresh every second" aria-label="live"></span>
+    </div>
+  </header>
+
+  <section class="head" id="overview" aria-labelledby="h-over">
+    <div>
+      <h1 id="h-over">Overview <span class="chip-ico" title="Read-only: the console never changes a decision"><svg><use href="#i-link"/></svg></span></h1>
+      <p>Live payment shield. <span id="sys-line">System not set</span>.</p>
+    </div>
+    <div class="controls">
+      <span class="pill"><svg><use href="#i-clock"/></svg><span class="win">last 60 s</span></span>
+      <span class="between">window</span>
+      <div class="seg" id="window-seg" role="group" aria-label="Time window">
+        <button type="button" data-win="60" class="is-active">60s</button>
+        <button type="button" data-win="300">5m</button>
+        <button type="button" data-win="900">15m</button>
+        <button type="button" data-win="3600">1h</button>
+      </div>
+      <span class="pill"><span class="k">System</span> <b id="system">not set</b></span>
+    </div>
+  </section>
+
+  <div class="bento">
+    <!-- the payment funnel: edge in, edge out, decided, not held, allowed -->
+    <section class="card s-8 funnel-card" aria-labelledby="h-funnel">
+      <div class="card-h"><h2 id="h-funnel">Payments <small class="win">last 60 s</small></h2><a class="more" href="#operations" aria-label="Edge and decision details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="funnel" id="funnel">
+        <div class="funnel-cols" id="funnel-cols"></div>
+        <svg id="funnel-svg" viewBox="0 0 700 200" preserveAspectRatio="none" role="img" aria-label="Payment funnel"></svg>
+        <div class="tip" id="funnel-tip" hidden></div>
+      </div>
+      <div class="ask" aria-live="polite">
+        <div class="ask-h"><svg><use href="#i-spark"/></svg>What Sentinel sees right now</div>
+        <div class="ask-body" id="sentinel-line">Waiting for the first Sentinel reading…</div>
+      </div>
+    </section>
+
+    <!-- decisions: big total and striped split -->
+    <section class="card s-4" aria-labelledby="h-dec">
+      <div class="card-h"><h2 id="h-dec">Decisions <small class="win">last 60 s</small></h2><a class="more" href="#latency-card" aria-label="Latency details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="big-row"><span class="big xl" id="dec-total">-</span><span class="delta" id="dec-hold-rate" title="Hold rate over the last 60 s against the cap">-</span></div>
+      <div class="meter" id="dec-meter"></div>
+      <p class="note" id="dec-paths"></p>
+    </section>
+
+    <!-- edge traffic over time: stepped line with hatch -->
+    <section class="card s-3 r-2" aria-labelledby="h-traffic">
+      <div class="card-h"><h2 id="h-traffic">Traffic</h2><a class="more" href="#edge-card" aria-label="Edge details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="step" id="traffic-step"></div>
+      <div class="axis" id="traffic-axis"></div>
+    </section>
+
+    <!-- passed at the edge: dot matrix -->
+    <section class="card s-5" aria-labelledby="h-edge">
+      <div class="card-h"><h2 id="h-edge">Passed the edge</h2><a class="more" href="#edge-card" aria-label="Edge details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="dots-wrap">
+        <span class="big" id="edge-passed">-</span>
+        <div class="dots" id="edge-dots"></div>
+        <div class="vs">shed<b id="edge-shed">-</b></div>
+      </div>
+    </section>
+
+    <!-- the quantum challenger, as the insight card -->
+    <section class="card s-4 r-2 insight" aria-labelledby="h-insight" id="insight">
+      <div class="in">
+        <span class="tag" id="h-insight">Quantum insight · shadow only</span>
+        <div class="slide" id="insight-slide"><div class="ins-big">-</div><h3>Loading the quantum challenger…</h3><p></p></div>
+        <div class="bars" id="insight-bars" role="tablist" aria-label="Quantum insights"></div>
+      </div>
+    </section>
+
+    <!-- held payments: dot matrix -->
+    <section class="card s-5" aria-labelledby="h-held">
+      <div class="card-h"><h2 id="h-held">Held payments</h2><a class="more" href="#holds-sec" aria-label="Hold queue"><svg><use href="#i-more"/></svg></a></div>
+      <div class="dots-wrap">
+        <span class="big" id="held-count">-</span>
+        <div class="dots" id="held-dots"></div>
+        <div class="vs">stand-in<b id="held-standin">-</b></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="section-h" id="operations"><h2>Operations</h2><p>In request-path order: perimeter, edge, decision, bank, ledger.</p></div>
+  <div class="bento">
+    <section class="card s-12" aria-labelledby="h-load">
+      <div class="card-h"><h2 id="h-load">Load level <small>Sentinel, one reading a second · <span class="win">last 60 s</span></small></h2></div>
+      <div class="strip" id="load-chart"></div>
+      <div class="axis" id="load-axis"></div>
       <div class="legend"><span><i style="background:var(--normal)"></i>NORMAL</span><span><i style="background:var(--surge)"></i>SURGE</span><span><i style="background:var(--coord)"></i>COORDINATED</span></div>
-      <div id="clusters" class="muted" style="margin-top:8px"></div>
+      <p class="note" id="clusters"></p>
     </section>
 
-    <!-- In request-path order: perimeter, edge, decisions, latency, then the bank and the ledger. -->
-    <section class="panel" aria-labelledby="h-perim">
-      <h2 id="h-perim">Perimeter <span class="hint">CDN / WAF / gateway</span></h2>
+    <section class="card s-4" aria-labelledby="h-perim">
+      <div class="card-h"><h2 id="h-perim">Perimeter <small>CDN · WAF · gateway</small></h2></div>
       <div id="perimeter" class="kv"></div>
-      <p id="perimeter-note" class="muted" style="margin-top:8px"></p>
+      <p id="perimeter-note" class="note"></p>
     </section>
 
-    <section class="panel" aria-labelledby="h-edge">
-      <h2 id="h-edge">Edge: passed vs shed <span class="win">last 60&nbsp;s</span></h2>
-      <div id="edge-chart" class="chart"></div>
-      <div class="legend"><span><i style="background:var(--bar1)"></i>passed</span><span><i style="background:var(--bar2)"></i>throttled (429)</span><span><i style="background:var(--bar3)"></i>blocked (403)</span></div>
-      <div id="edge-totals" class="kv" style="margin-top:10px"></div>
+    <section class="card s-4" id="edge-card" aria-labelledby="h-edge2">
+      <div class="card-h"><h2 id="h-edge2">Edge <small class="win">last 60 s</small></h2></div>
+      <div id="edge-totals" class="kv"></div>
+      <div class="meter" id="edge-meter"></div>
     </section>
 
-    <section class="panel" aria-labelledby="h-dec">
-      <h2 id="h-dec">Decisions <span class="win">last 60&nbsp;s</span></h2>
-      <div id="dec-chart" class="chart" style="margin-bottom:10px"></div>
-      <div class="legend" style="margin:-4px 0 10px"><span><i style="background:var(--ok)"></i>allow</span><span><i style="background:var(--warn)"></i>verify</span><span><i style="background:var(--bad)"></i>hold</span></div>
-      <div id="decisions" class="kv"></div>
-      <div id="paths" class="muted" style="margin-top:8px"></div>
-      <div id="hold-alert" style="margin-top:6px"></div>
-    </section>
-
-    <section class="panel" aria-labelledby="h-lat">
-      <h2 id="h-lat">Latency &amp; deadline <span class="win">last 60&nbsp;s</span></h2>
+    <section class="card s-4" id="latency-card" aria-labelledby="h-lat">
+      <div class="card-h"><h2 id="h-lat">Latency &amp; deadline <small class="win">last 60 s</small></h2></div>
       <div id="latency" class="kv"></div>
-      <p class="muted" style="margin-top:8px">Payment deadline 100&nbsp;ms; client p99 target ≤ 50&nbsp;ms at the base rate.</p>
+      <p class="note">Payment deadline 100&nbsp;ms; client p99 target ≤ 50&nbsp;ms at the base rate.</p>
     </section>
 
-    <section class="panel" aria-labelledby="h-bank">
-      <h2 id="h-bank">Bank books <span class="hint">the bank's own record</span></h2>
+    <section class="card s-4" aria-labelledby="h-bank">
+      <div class="card-h"><h2 id="h-bank">Bank books <small>the bank's own record</small></h2></div>
       <div id="bank" class="kv"></div>
-      <div id="bank-note" class="muted" style="margin-top:6px"></div>
+      <p id="bank-note" class="note"></p>
     </section>
 
-    <section class="panel" aria-labelledby="h-ledger">
-      <h2 id="h-ledger">Ledger <span class="hint">hash-chained, verifiable</span></h2>
+    <section class="card s-4" id="ledger-card" aria-labelledby="h-ledger">
+      <div class="card-h"><h2 id="h-ledger">Ledger <small>hash-chained, verifiable</small></h2></div>
       <div id="ledger" class="kv"></div>
-      <p style="margin:12px 0 0"><button id="verify-btn" type="button">Verify the chain</button> <span id="verify-result" aria-live="polite"></span></p>
+      <p class="note" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button id="verify-btn" type="button" class="btn">Verify the chain</button> <span id="verify-result" aria-live="polite"></span></p>
     </section>
 
-    <section class="panel wide" aria-labelledby="h-hold">
-      <h2 id="h-hold">Hold queue <span class="hint">most urgent first</span></h2>
-      <p class="research" id="challenger-label">Quantum challenger (research, simulated 8 qubits); does not affect decisions</p>
-      <div class="scroll"><table>
-        <thead><tr><th>Payment</th><th class="num">Amount</th><th class="num">Classical</th><th class="num">Challenger</th><th>Reason codes &amp; case note</th></tr></thead>
-        <tbody id="holds"><tr><td colspan="5" class="muted">No held payments yet.</td></tr></tbody>
-      </table></div>
-    </section>
-
-    <section class="panel wide" aria-labelledby="h-quantum">
-      <h2 id="h-quantum">Quantum challenger result <span class="hint">research, simulated 8 qubits, shadow only</span></h2>
-      <div class="bezel"><div class="qcard" id="quantum-card">
-        <div class="q-verdict" id="q-verdict">Awaiting the quantum gate</div>
-        <div class="q-big" id="q-big">-</div>
-        <div class="q-sub" id="q-sub">The pre-registered gate has not run yet.</div>
-        <div class="q-grid" id="q-tiles"></div>
-        <div class="q-note" id="q-note"></div>
-      </div></div>
-    </section>
-
-    <section class="panel wide" aria-labelledby="h-shield">
-      <h2 id="h-shield">Shield agreement <span class="hint">bank engine vs our shadow score</span></h2>
+    <section class="card s-4" aria-labelledby="h-shield">
+      <div class="card-h"><h2 id="h-shield">Shield agreement <small>bank engine vs our shadow score</small></h2></div>
       <div id="shield" class="kv"></div>
+      <p class="note">Our classical model scores every payment in shadow; it never changes the bank's decision.</p>
     </section>
   </div>
-</main>
+
+  <div class="section-h" id="holds-sec"><h2>Hold queue</h2><p>Most urgent first, with the quantum challenger's shadow score beside the classical one.</p></div>
+  <section class="card" aria-label="Hold queue">
+    <p class="note" id="challenger-label" style="margin:0 0 12px">Quantum challenger (research, simulated 8 qubits); does not affect decisions</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Payment</th><th class="num">Amount</th><th class="num">Classical</th><th class="num">Challenger</th><th>Reason codes &amp; case note</th></tr></thead>
+      <tbody id="holds"><tr><td colspan="5" class="muted">No held payments yet.</td></tr></tbody>
+    </table></div>
+  </section>
+
+  <div class="section-h" id="quantum"><h2>Quantum challenger results</h2><p>Pre-registered gate against matched classical controls. Research only: simulated 8 qubits, shadow only.</p></div>
+  <div id="quantum-results"></div>
+</div>
+<script src="/static/quantum.js"></script>
 <script src="/static/console.js"></script>
 </body>
 </html>

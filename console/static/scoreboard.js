@@ -79,8 +79,8 @@ function renderMatrix() {
   $("matrix").innerHTML = html + "</tbody>";
 }
 
-// Headline card: the three bank set-ups, and the change from the fairest baseline that was run (the realistic bank,
-// else the bank alone) to bank + Shield.
+// Headline card: bank + Shield as the big number, the two bank set-ups beneath, and the change from the fairest
+// baseline that was run (the realistic bank, else the bank alone).
 function card(title, key, f, betterLow) {
   const scen = SUMMARY.matrix[CURRENT] || {};
   const val = (id) => (scen[id] && scen[id].median && scen[id].median[key] != null ? scen[id].median[key] : null);
@@ -91,10 +91,11 @@ function card(title, key, f, betterLow) {
     const d = b - base;
     const good = betterLow ? d < 0 : d > 0;
     const rel = base !== 0 ? ` (${(100 * d / Math.abs(base)).toLocaleString(undefined, { maximumFractionDigits: 1 })}%)` : "";
-    delta = `<small class="${d === 0 ? "na" : good ? "pass" : "fail"}">Shield vs ${baseName}: ${d > 0 ? "+" : ""}${esc(f(d))}${rel}</small>`;
+    delta = `<div class="d"><span class="tag ${d === 0 ? "plain" : good ? "ok" : "bad"}">vs ${esc(baseName)}: ${d > 0 ? "+" : ""}${esc(f(d))}${esc(rel)}</span></div>`;
   }
-  const show = (label, v, cls) => `<small>${esc(label)}</small><b class="${cls}">${esc(v == null ? "not run" : f(v))}</b>`;
-  return `<div class="card"><h3>${esc(title)}</h3><div class="vs">${show("Bank alone", a, "")}${show("Realistic bank", r, "")}${show("Bank + Shield", b, "ours")}</div>${delta}</div>`;
+  const show = (label, v) => `<span>${esc(label)}</span><b>${esc(v == null ? "not run" : f(v))}</b>`;
+  return `<div class="card sc-card"><h3>${esc(title)}</h3><div class="ours-v" title="Bank + Shield">${esc(b == null ? "not run" : f(b))}</div>
+    <div class="rows">${show("Bank alone", a)}${show("Realistic bank", r)}</div>${delta}</div>`;
 }
 
 function renderCards() {
@@ -126,34 +127,36 @@ function select(id) {
 
 function renderCapacity() {
   const c = SUMMARY.capacity;
-  if (!c) { $("capacity").innerHTML = `<p class="muted">not run</p>`; return; }
+  if (!c) { $("capacity").innerHTML = `<p class="note">not run</p>`; return; }
   const max = Math.max(c.cores_score_all || 0, c.cores_cascade || 0, 1);
-  const bar = (label, v, color) => `<div style="margin:6px 0"><div class="muted">${esc(label)}: <b>${esc(num(1)(v))} cores</b></div><svg width="100%" height="16" viewBox="0 0 100 16" preserveAspectRatio="none" role="img" aria-label="${esc(label)} ${esc(v)} cores"><rect x="0" y="2" width="${(100 * (v || 0) / max).toFixed(2)}" height="12" fill="${color}"/></svg></div>`;
+  const bar = (label, v, cls) => `<div class="row"><span>${esc(label)}</span><b>${esc(num(1)(v))} cores</b></div>
+    <div class="track" style="margin-bottom:12px"><div class="fill ${cls}" style="width:${(100 * (v || 0) / max).toFixed(1)}%"></div></div>`;
   const saving = c.cores_score_all ? 100 * (1 - c.cores_cascade / c.cores_score_all) : null;
   const per = c.cpu_us_per_req || {};
-  $("capacity").innerHTML = bar("Score everything", c.cores_score_all, "var(--bar3)") + bar("Cascade (RiskFabric)", c.cores_cascade, "var(--bar1)") +
-    `<p>${saving == null ? "" : `Cascade saves <b>${esc(num(1)(saving))}%</b> of cores (target at least 60%).`}</p>` +
-    `<p class="muted">CPU µs per request: ${Object.entries(per).map(([k, v]) => `${esc(k)} ${esc(num(1)(v))}`).join(", ")}</p>` +
-    `<p class="mono muted">${esc(c.command || "")}</p>`;
+  $("capacity").innerHTML = (saving == null ? "" : `<div class="big-row"><span class="big">${esc(num(1)(saving))}%</span><span class="tag ${saving >= 60 ? "ok" : "warn"}">cores saved · target ≥ 60%</span></div>`) +
+    `<div class="meter">${bar("Score everything", c.cores_score_all, "p")}${bar("Cascade (RiskFabric)", c.cores_cascade, "b")}</div>` +
+    `<p class="note">CPU µs per request: ${Object.entries(per).map(([k, v]) => `${esc(k)} ${esc(num(1)(v))}`).join(", ")}</p>` +
+    `<p class="note mono">${esc(c.command || "")}</p>`;
 }
 
+// Model quality: the bank's rules alone (what a bank runs today), the plain model and ours, on the same test rows.
 function renderModel() {
   const m = SUMMARY.model;
-  if (!m || !m.gfp_gbm) { $("model").innerHTML = `<p class="muted">not run</p>`; return; }
-  const row = (n, x) => `<tr><td>${esc(n)}</td><td class="num">${esc(num(3)(x.f1))}</td><td class="num">${esc(num(3)(x.pr_auc))}</td><td class="num">${esc(pct(x.recall_at_1pct))}</td></tr>`;
-  $("model").innerHTML = `<table><thead><tr><th>Model</th><th class="num">F1 (laundering)</th><th class="num">PR-AUC</th><th class="num">Recall at top 1%</th></tr></thead><tbody>${row("gfp-gbm-v1 (ours)", m.gfp_gbm)}${m.raw_gbm ? row("raw-gbm-v1 (baseline, the bank's model)", m.raw_gbm) : ""}</tbody></table><p class="muted">Inference p99 on the VM: ${esc(ms(m.p99_ms) || "-")} · source ${esc(m.source || "")}</p>`;
-}
-
-function renderQuantum() {
-  if (!QUANTUM) { $("quantum").innerHTML = `<p class="muted">No quantum results yet.</p>`; return; }
-  const rows = (QUANTUM.rows || []).map((r) => `<tr><td>${esc(r.model)}</td><td class="num">${esc(r.seed)}</td><td>${esc(r.backend)}</td><td class="num">${esc(pct(r.recall_at_cap))}</td><td class="num">${esc(num(3)(r.pr_auc))}</td><td>${esc(r.control || "")}</td><td class="num">${r.diff_vs_control == null ? "" : esc((100 * r.diff_vs_control).toFixed(2)) + " pts"}</td><td class="num">${r.diff_ci95 ? esc(`[${(100 * r.diff_ci95[0]).toFixed(2)}, ${(100 * r.diff_ci95[1]).toFixed(2)}]`) : ""}</td><td class="num">${esc(num(2)(r.ms_per_item))}</td></tr>`).join("");
-  $("quantum").innerHTML = `<p><b>Verdict: ${esc(QUANTUM.verdict)}</b></p><p>${esc(QUANTUM.statement || "")}</p>
-    <div class="scroll"><table><thead><tr><th>Model or control</th><th class="num">Seed</th><th>Backend</th><th class="num">Recall at capacity</th><th class="num">PR-AUC</th><th>Compared with</th><th class="num">Difference</th><th class="num">95% interval</th><th class="num">ms per item</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <p class="muted">Full gate: quantum/GATE.md</p>`;
+  if (!m || !m.gfp_gbm) { $("model").innerHTML = `<p class="note">not run: <span class="mono">python -m scoring train --source hi_small --path …</span></p>`; return; }
+  const f3 = num(3);
+  const row = (n, x, ours) => `<tr><td>${ours ? `<b>${esc(n)}</b>` : esc(n)}</td><td class="num">${esc(pct(x.precision) || "-")}</td><td class="num">${esc(pct(x.recall) || "-")}</td>
+    <td class="num">${esc(f3(x.f1) || "-")}</td><td class="num">${esc(f3(x.pr_auc) || "-")}</td><td class="num">${esc(pct(x.recall_at_1pct) || "-")}</td></tr>`;
+  const rules = m.rules_only ? row("Bank rules alone (R1 to R3)", m.rules_only) : "";
+  const lift = m.rules_only && m.rules_only.recall != null && m.gfp_gbm.recall != null
+    ? `<span class="tag ${m.gfp_gbm.recall > m.rules_only.recall ? "ok" : "plain"}">recall ${esc(pct(m.gfp_gbm.recall))} vs rules ${esc(pct(m.rules_only.recall))}</span>` : "";
+  $("model").innerHTML = `<div class="scroll"><table><thead><tr><th>Model</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th><th class="num">PR-AUC</th><th class="num">Recall at top 1%</th></tr></thead>
+    <tbody>${rules}${m.raw_gbm ? row("raw-gbm-v1 (baseline, the bank's model)", m.raw_gbm) : ""}${row("gfp-gbm-v1 (ours, graph features)", m.gfp_gbm, true)}</tbody></table></div>
+    <p class="note">${lift} Precision, recall and F1 at the tuned hold threshold; the rules give a decision, not a ranking, so they have no PR-AUC. ${m.synthetic ? "<b>Synthetic data: checks the pipeline only.</b> " : ""}Inference p99: ${esc(ms(m.p99_ms) || "-")} · source ${esc(m.source || "")}</p>`;
 }
 
 async function main() {
   [SUMMARY, QUANTUM] = await Promise.all([get("/api/results/summary"), get("/api/quantum/summary")]);
+  window.RFQuantum.renderResults($("quantum-results"), QUANTUM && !QUANTUM.empty ? QUANTUM : null);
   if (!SUMMARY || !SUMMARY.matrix) {
     $("empty").hidden = false;
     $("empty").textContent = "No results yet: run eval/scenarios/run_all.sh";
@@ -163,6 +166,6 @@ async function main() {
   $("host").textContent = `${SUMMARY.host || "?"} · ${SUMMARY.arch || "?"} · AI accelerator: ${SUMMARY.nnpa ? "present" : "not present"} · commit ${SUMMARY.commit || "?"} · generated ${SUMMARY.generated_ts ? new Date(SUMMARY.generated_ts * 1000).toLocaleString() : "?"}`;
   $("footer").innerHTML = `Every number comes from <span class="mono">eval/results/</span>. Rebuild with <span class="mono">python -m eval.scenarios.summary</span>; full tables in <span class="mono">eval/RESULTS.md</span>.`;
   select(SUMMARY.matrix.S4 ? "S4" : Object.keys(SUMMARY.matrix)[0] || "S4");
-  renderCapacity(); renderModel(); renderQuantum();
+  renderCapacity(); renderModel();
 }
 main();

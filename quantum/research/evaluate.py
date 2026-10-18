@@ -334,7 +334,11 @@ def cmd_test(args) -> int:
     with open(os.path.join(QDIR, "GATE.md"), "w", encoding="utf-8") as fh:
         fh.write(gate.gate_markdown(v, comparisons["QP-1"], comparisons["QK-1"], n1, rand, pcommit, data.inputs, worker))
     summary = {"generated_ts": time.time(), "verdict": v["verdict"], "statement": v["statement"],
-               "rerank_allowed": v["rerank_allowed"], "random_order_recall": rand, "rows": rows, "gate_file": "quantum/GATE.md"}
+               "rerank_allowed": v["rerank_allowed"], "random_order_recall": rand, "rows": rows, "gate_file": "quantum/GATE.md",
+               # the gate's own checks, so the console shows why the verdict is what it is without parsing GATE.md
+               "gate": {k: v[k] for k in ("qp1_beats", "qk1_beats", "sanity_ok", "protocol_committed")},
+               "n1_recall": n1, "protocol_commit": pcommit, "min_gain": gate.MIN_GAIN,
+               "sanity_tolerance": gate.SANITY_TOLERANCE, "worker": worker or None}
     with open(os.path.join(RESULTS, "summary.json"), "w", encoding="utf-8") as fh:
         json.dump(summary, fh, indent=1)
     print(f"verdict: {v['verdict']}\n{v['statement']}")

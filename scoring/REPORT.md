@@ -18,10 +18,15 @@ python -m scoring export --source hi_small --path $RF_DATA/replay/HI-Small_Trans
 - Thresholds: `policy.json` `hold_at`/`verify_at` tuned on validation to the hold-rate cap (`cfg:hold_cap_pct`, ~2%).
 
 ## Metrics on the time-ordered test split (fill on the VM)
-| Model | Minority-class F1 | PR-AUC | Recall at top 1% |
-|---|---|---|---|
-| `gfp-gbm-v1` (ours) | _fill_ | _fill_ | _fill_ |
-| `raw-gbm-v1` (plain baseline) | _fill_ | _fill_ | _fill_ |
+| Model | Precision | Recall | Minority-class F1 | PR-AUC | Recall at top 1% |
+|---|---|---|---|---|---|
+| Bank rules alone (R1 to R3, no model) | _fill_ | _fill_ | _fill_ | n/a | n/a |
+| `raw-gbm-v1` (plain baseline) | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
+| `gfp-gbm-v1` (ours) | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
+
+Precision, recall and F1 are at the tuned `hold_at` threshold. The rules row replays `bank/rules.py` over the same
+data in time order with every account known to the bank, so it shows what the model adds over the rules a bank
+already runs. The rules give a decision, not a ranking, so they have no PR-AUC.
 
 Source of the table: `scoring/report.json`, written by `python -m scoring train`. The scoreboard reads it
 (CONTRACTS section 12). Command for each number: the `train` command above.

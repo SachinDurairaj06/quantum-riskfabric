@@ -7,56 +7,70 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header>
-  <h1>Evaluation on LinuxONE · Quantum RiskFabric</h1>
-  <div><span id="host" class="muted"></span> <span class="badge" style="color:var(--muted)">Synthetic data. All numbers measured on this VM.</span>
-    <nav style="display:inline"><a href="/">Console</a></nav></div>
-</header>
-<main>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 1.8l5 1.9v4c0 3.1-2.1 5.5-5 6.5-2.9-1-5-3.4-5-6.5v-4z" fill="#fff"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 2v2M9.5 2v2M6.5 12v2M9.5 12v2M2 6.5h2M2 9.5h2M12 6.5h2M12 9.5h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+</svg>
+<div class="frame">
+  <header class="top" role="banner">
+    <a class="logo" href="/" aria-label="RiskFabric console home"><span class="logo-mark"><svg><use href="#i-shield"/></svg></span>riskfabric<small>scoreboard</small></a>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <a href="/">Console</a>
+      <a href="#results" class="is-active">Results</a>
+      <a href="#h-matrix-sec">Matrix</a>
+      <a href="#platform">Model &amp; capacity</a>
+      <a href="#quantum">Quantum</a>
+      <a href="#evidence">Evidence</a>
+    </nav>
+    <div class="top-right"><span class="tag plain">Synthetic data · measured on this VM</span></div>
+  </header>
+
+  <section class="head" id="results">
+    <div>
+      <h1>Evaluation <span class="chip-ico" title="Every number comes from eval/results/"><svg><use href="#i-link"/></svg></span></h1>
+      <p id="host" class="muted"></p>
+    </div>
+    <div class="controls"><div class="tabs" role="tablist" aria-label="Scenario" id="tabs"></div></div>
+  </section>
+
   <div id="empty" class="empty" hidden></div>
   <div id="content" hidden>
-    <div class="tabs" role="tablist" aria-label="Scenario" id="tabs"></div>
-    <p id="scenario-desc" class="muted"></p>
+    <p id="scenario-desc" class="muted" style="margin:-4px 2px 14px"></p>
     <div class="cards" id="cards"></div>
 
-    <section class="panel wide" aria-labelledby="h-matrix">
-      <h2 id="h-matrix">Evaluation matrix</h2>
-      <p class="muted">Median of valid runs; the range is min to max. Hover or focus a cell to see its runs and command. "not run" means no valid run exists.</p>
-      <div class="scroll"><table id="matrix"></table></div>
-    </section>
+    <div class="section-h" id="h-matrix-sec"><h2 id="h-matrix">Evaluation matrix</h2><p>Median of valid runs; the range is min to max. Hover or focus a cell to see its runs and command. "not run" means no valid run exists.</p></div>
+    <section class="card"><div class="scroll" style="max-height:640px"><table id="matrix"></table></div></section>
 
-    <div class="grid" style="margin-top:14px">
-      <section class="panel" aria-labelledby="h-cap">
-        <h2 id="h-cap">Capacity at 100,000 requests/s, 80% attack</h2>
-        <div id="capacity"></div>
-      </section>
-      <section class="panel" aria-labelledby="h-model">
-        <h2 id="h-model">Model quality (HI-Small, time-ordered test split)</h2>
+    <div class="section-h" id="platform"><h2>Model &amp; capacity</h2><p>What the classical model adds over the bank's own rules, and what the cascade saves.</p></div>
+    <div class="bento">
+      <section class="card s-7" aria-labelledby="h-model">
+        <div class="card-h"><h2 id="h-model">Model quality <small>HI-Small, time-ordered test split</small></h2></div>
         <div id="model"></div>
+      </section>
+      <section class="card s-5" aria-labelledby="h-cap">
+        <div class="card-h"><h2 id="h-cap">Capacity <small>100,000 requests/s, 80% attack</small></h2><span class="more" aria-hidden="true"><svg><use href="#i-cpu"/></svg></span></div>
+        <div id="capacity"></div>
       </section>
     </div>
 
-    <section class="panel wide" aria-labelledby="h-q" style="margin-top:14px">
-      <h2 id="h-q">Quantum challenger</h2>
-      <p class="research">Research. 8-qubit circuit, simulated exactly. Never changes a payment decision.</p>
-      <div id="quantum"></div>
-    </section>
-
-    <section class="panel wide" aria-labelledby="h-ev" style="margin-top:14px">
-      <h2 id="h-ev">Evidence for the judging criteria</h2>
-      <div class="scroll"><table>
-        <thead><tr><th>Criterion</th><th>Where the evidence is</th></tr></thead>
-        <tbody>
-          <tr><td>Value to the community and theme alignment</td><td>Shield against the realistic bank and the bank alone (cards above); S6, where customers share a fingerprint with the bots; S2 with no false alarm; adoption without replacing the bank (prd/01 section 4)</td></tr>
-          <tr><td>Novelty and originality</td><td>"Load can't buy a weaker check"; risk-tiered stand-in instead of a flat fallback (S5); cluster signals for the bank's own engine; a quantum challenger with a pre-registered gate and an honest verdict (panel above)</td></tr>
-          <tr><td>Technical design, LinuxONE and open-source AI/ML</td><td>Architecture in docs/ARCHITECTURE.md; Snap ML and the Graph Feature Preprocessor on s390x; accelerator check in the header; capacity table above</td></tr>
-          <tr><td>Execution and delivery</td><td>Checks C-01 to C-16 (eval/checks); one-command start (deploy/README.md); ledger verify on the console; every number above with its command</td></tr>
-        </tbody>
-      </table></div>
-    </section>
+    <div class="section-h" id="evidence"><h2>Evidence for the judging criteria</h2></div>
+    <section class="card"><div class="scroll"><table>
+      <thead><tr><th>Criterion</th><th>Where the evidence is</th></tr></thead>
+      <tbody>
+        <tr><td>Value to the community and theme alignment</td><td>Shield against the realistic bank and the bank alone (cards above); S6, where customers share a fingerprint with the bots; S2 with no false alarm; adoption without replacing the bank (prd/01 section 4)</td></tr>
+        <tr><td>Novelty and originality</td><td>"Load can't buy a weaker check"; risk-tiered stand-in instead of a flat fallback (S5); cluster signals for the bank's own engine; a quantum challenger with a pre-registered gate and an honest verdict (section below)</td></tr>
+        <tr><td>Technical design, LinuxONE and open-source AI/ML</td><td>Architecture in docs/ARCHITECTURE.md; Snap ML and the Graph Feature Preprocessor on s390x; accelerator check in the header; capacity card above</td></tr>
+        <tr><td>Execution and delivery</td><td>Checks C-01 to C-16 (eval/checks); one-command start (deploy/README.md); ledger verify on the console; every number above with its command</td></tr>
+      </tbody>
+    </table></div></section>
     <footer id="footer"></footer>
   </div>
-</main>
+
+  <div class="section-h" id="quantum"><h2>Quantum challenger</h2><p>Research. 8-qubit circuit, simulated exactly. Never changes a payment decision.</p></div>
+  <div id="quantum-results"></div>
+</div>
+<script src="/static/quantum.js"></script>
 <script src="/static/scoreboard.js"></script>
 </body>
 </html>

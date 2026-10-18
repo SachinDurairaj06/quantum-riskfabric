@@ -1,0 +1,1727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RiskFabric Console (demo data)</title>
+<style>/* RiskFabric console + scoreboard. Plain CSS, no frameworks, no external fonts.
+   Soft analytics theme: a grey canvas holding one off-white app frame, white cards with a hairline border and a
+   whisper of shadow, a black pill for the active nav item, light display numerals, hatched blue bars, dot matrices,
+   and one warm-to-cool gradient "insight" card that carries the quantum challenger. Locked light.
+   Shape rule: cards use the large radius, inner surfaces a smaller one, every control and tag is a pill. */
+:root {
+  --canvas: #e4e5ea; --frame: #f7f7f9; --card: #ffffff; --soft: #f3f4f7; --soft-2: #eceef3;
+  --line: #ebecf0; --line-2: #dcdfe6;
+  --ink: #111318; --ink-2: #3f4452; --muted: #8b90a0; --faint: #b7bbc6;
+  --blue: #2f62f5; --blue-2: #5b86ff; --blue-soft: #e3eaff; --blue-ghost: #f0f4ff;
+  --green: #1fa463; --green-soft: #d8f3e5; --pink: #e8488a; --pink-soft: #fbe1ec;
+  --amber: #e59a1a; --amber-soft: #fcefd6; --red: #e0453f; --red-soft: #fde3e2;
+  --violet: #6b4cff; --violet-soft: #ece8ff;
+  --ok: var(--green); --warn: var(--amber); --bad: var(--red);
+  --normal: var(--green); --surge: var(--amber); --coord: var(--red);
+  --sans: "Inter", "SF Pro Display", "Segoe UI Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+  --r-frame: 30px; --r-card: 20px; --r-md: 14px; --r-sm: 10px;
+  --shadow: 0 1px 1px rgba(17, 19, 24, .02), 0 8px 24px -18px rgba(17, 19, 24, .18);
+  --shadow-frame: 0 2px 4px rgba(17, 19, 24, .03), 0 40px 80px -40px rgba(17, 19, 24, .25);
+  --ease: cubic-bezier(.32, .72, 0, 1);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 96px; }
+body { margin: 0; background: var(--canvas); color: var(--ink); font: 14px/1.5 var(--sans); letter-spacing: -.005em;
+  -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+a { color: inherit; }
+.mono { font-family: var(--mono); font-size: 12px; letter-spacing: 0; }
+.muted { color: var(--muted); }
+[hidden] { display: none !important; }
+
+/* ---------- app frame ---------- */
+.frame { max-width: 1440px; margin: 24px auto; background: var(--frame); border-radius: var(--r-frame);
+  box-shadow: var(--shadow-frame); padding: 22px 28px 36px; min-height: calc(100dvh - 48px); }
+
+/* ---------- top bar: logo, pill nav, status ---------- */
+.top { position: sticky; top: 12px; z-index: 30; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  gap: 16px; padding: 8px 8px 8px 10px; margin: -6px -8px 0; border-radius: 999px;
+  background: color-mix(in srgb, var(--frame) 86%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font: 600 19px/1 var(--sans); letter-spacing: -.03em; }
+.logo-mark { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+  background: linear-gradient(140deg, #ffb357, #ff7a3d 55%, #5b6cff); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
+.logo-mark svg { width: 15px; height: 15px; }
+.logo small { font: 500 12px/1 var(--sans); color: var(--muted); letter-spacing: 0; margin-left: 2px; }
+.nav { display: flex; gap: 2px; padding: 4px; border-radius: 999px; }
+.nav a { text-decoration: none; color: var(--ink-2); font-weight: 500; font-size: 13px; padding: 8px 14px; border-radius: 999px;
+  transition: background .3s var(--ease), color .3s var(--ease); white-space: nowrap; }
+.nav a:hover { background: var(--soft-2); }
+.nav a.is-active { background: var(--ink); color: #fff; box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .6); }
+.top-right { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.icon-btn { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line);
+  background: var(--card); color: var(--ink-2); text-decoration: none; transition: border-color .25s var(--ease); }
+.icon-btn:hover { border-color: var(--line-2); }
+.icon-btn svg { width: 16px; height: 16px; }
+.live { position: relative; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  background: linear-gradient(140deg, #e9efff, #fff); border: 1px solid var(--line); }
+.live::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--green); animation: pulse 2.4s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 55%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* ---------- page head ---------- */
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; margin: 26px 2px 18px; }
+.head h1 { display: flex; align-items: center; gap: 12px; margin: 0; font: 500 40px/1 var(--sans); letter-spacing: -.035em; }
+.head h1 .chip-ico { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; background: var(--card); }
+.head h1 .chip-ico svg { width: 13px; height: 13px; color: var(--ink-2); }
+.head p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pill { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line); font: 500 12px/1 var(--sans); color: var(--ink-2); white-space: nowrap; text-decoration: none; }
+.pill svg { width: 13px; height: 13px; color: var(--muted); }
+.pill .k { color: var(--muted); }
+a.pill:hover, button.pill:hover { border-color: var(--line-2); }
+.between { color: var(--muted); font-size: 11px; }
+.seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
+.seg button { height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--muted);
+  font: 500 12px/1 var(--sans); cursor: pointer; transition: background .3s var(--ease), color .3s var(--ease); }
+.seg button:hover { color: var(--ink); }
+.seg button.is-active { background: var(--soft-2); color: var(--ink); }
+
+/* status tags */
+.tag { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px;
+  font: 600 11px/1 var(--sans); letter-spacing: .01em; white-space: nowrap; background: var(--soft); color: var(--ink-2); }
+.tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .9; }
+.tag.plain::before { display: none; }
+.tag.ok, .lvl-NORMAL { background: var(--green-soft); color: #137a48; }
+.tag.warn, .lvl-SURGE { background: var(--amber-soft); color: #9a6408; }
+.tag.bad, .lvl-COORDINATED { background: var(--red-soft); color: #b42d28; }
+.tag.blue { background: var(--blue-soft); color: var(--blue); }
+.tag.violet { background: var(--violet-soft); color: var(--violet); }
+
+/* ---------- cards and bento ---------- */
+.bento { display: grid; gap: 14px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.card { position: relative; min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card);
+  padding: 18px 20px 20px; box-shadow: var(--shadow); }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 12px; }
+.card-h h2 { margin: 0; font: 500 16px/1.2 var(--sans); letter-spacing: -.015em; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.card-h h2 small { font: 400 12px/1 var(--sans); color: var(--muted); letter-spacing: 0; }
+.more { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center;
+  color: var(--muted); text-decoration: none; background: var(--card); transition: border-color .25s var(--ease), color .25s var(--ease); }
+.more:hover { border-color: var(--line-2); color: var(--ink); }
+.more svg { width: 14px; height: 14px; }
+.s-12 { grid-column: span 12; } .s-8 { grid-column: span 8; } .s-7 { grid-column: span 7; } .s-6 { grid-column: span 6; }
+.s-5 { grid-column: span 5; } .s-4 { grid-column: span 4; } .s-3 { grid-column: span 3; }
+.r-2 { grid-row: span 2; }
+.section-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 34px 2px 14px; flex-wrap: wrap; }
+.section-h h2 { margin: 0; font: 500 24px/1.1 var(--sans); letter-spacing: -.03em; }
+.section-h p { margin: 0; color: var(--muted); font-size: 13px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .bento > .card { animation: rise .7s var(--ease) both; }
+  .bento > .card:nth-child(2) { animation-delay: .05s; } .bento > .card:nth-child(3) { animation-delay: .1s; }
+  .bento > .card:nth-child(4) { animation-delay: .15s; } .bento > .card:nth-child(5) { animation-delay: .2s; }
+  .bento > .card:nth-child(n+6) { animation-delay: .25s; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* big numbers */
+.big { font: 400 46px/1 var(--sans); letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+.big.xl { font-size: 54px; }
+.big-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.delta { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 9px; border-radius: 999px;
+  border: 1px solid var(--line); font: 600 11px/1 var(--sans); color: var(--ink-2); background: var(--card); }
+.delta.up::before { content: ""; border: 4px solid transparent; border-bottom: 5px solid var(--green); margin-top: -4px; }
+.delta.down::before { content: ""; border: 4px solid transparent; border-top: 5px solid var(--red); margin-top: 4px; }
+.vs { text-align: right; font-size: 11px; color: var(--muted); }
+.vs b { display: block; font: 500 17px/1.2 var(--sans); color: var(--ink); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+
+/* ---------- funnel (hatched bars) ---------- */
+.funnel { position: relative; }
+.funnel-cols { display: grid; grid-template-columns: 34px repeat(5, minmax(0, 1fr)); }
+.funnel-cols .fc { padding: 2px 10px 8px; border-left: 1px solid var(--line); min-width: 0; cursor: default; }
+.funnel-cols .fc span { display: block; font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.funnel-cols .fc b { display: block; font: 400 22px/1.25 var(--sans); letter-spacing: -.03em; color: var(--faint); font-variant-numeric: tabular-nums; }
+.funnel-cols .fc.on span { color: var(--ink-2); } .funnel-cols .fc.on b { color: var(--ink); }
+.funnel svg { display: block; width: 100%; height: 200px; overflow: visible; }
+.funnel .tip { position: absolute; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
+  background: color-mix(in srgb, #fff 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 11px; color: var(--ink-2);
+  box-shadow: 0 8px 20px -12px rgba(17, 19, 24, .35); transition: left .35s var(--ease), top .35s var(--ease); }
+.funnel .tip b { color: var(--ink); font-weight: 600; }
+.ask { margin: 10px -6px -6px; border-radius: var(--r-md); padding: 10px 12px 12px;
+  background: linear-gradient(180deg, var(--blue-ghost), #fff); border: 1px solid var(--blue-soft); }
+.ask .ask-h { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 12px; margin-bottom: 8px; }
+.ask .ask-h svg { width: 14px; height: 14px; color: var(--blue); }
+.ask .ask-body { background: #fff; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 12px; font-size: 12.5px; color: var(--ink-2); min-height: 38px; }
+.ask .hl { display: inline-block; padding: 1px 7px; border-radius: 6px; background: var(--amber-soft); color: #9a6408;
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent); font-size: 12px; }
+.ask .hl.red { background: var(--red-soft); color: #b42d28; border-color: color-mix(in srgb, var(--red) 30%, transparent); }
+.ask .hl.blue { background: var(--blue-soft); color: var(--blue); border-color: color-mix(in srgb, var(--blue) 25%, transparent); }
+
+/* ---------- striped progress rows ---------- */
+.meter { margin-top: 16px; }
+.meter .row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); margin-bottom: 7px; }
+.meter .row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.meter .track { height: 9px; border-radius: 999px; background: var(--soft); overflow: hidden; }
+.meter .fill { height: 100%; border-radius: 999px; min-width: 2px; transition: width .8s var(--ease);
+  background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .28) 0 3px, transparent 3px 6px); }
+.fill.g { background-color: var(--green); } .fill.b { background-color: var(--blue); } .fill.p { background-color: var(--pink); }
+.fill.a { background-color: var(--amber); } .fill.v { background-color: var(--violet); } .fill.k { background-color: #9aa0ae; }
+
+/* ---------- dot matrix + stepped line ---------- */
+.dots-wrap { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.dots { position: relative; flex: 1; min-width: 0; display: flex; justify-content: center; }
+.dots svg { display: block; max-width: 100%; height: 76px; overflow: visible; }
+.peak { position: absolute; top: -26px; transform: translateX(-50%); font-size: 10.5px; color: var(--ink-2); white-space: nowrap;
+  background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; box-shadow: 0 6px 14px -10px rgba(0, 0, 0, .3); }
+.peak b { font-weight: 600; color: var(--ink); }
+.step svg { display: block; width: 100%; height: 210px; overflow: visible; }
+.axis { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+
+/* ---------- key/value tiles ---------- */
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.kv div { background: var(--soft); border-radius: var(--r-md); padding: 11px 13px; min-width: 0; }
+.kv span { display: block; color: var(--muted); font-size: 11.5px; margin-bottom: 4px; }
+.kv b { display: block; font: 500 21px/1.15 var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.note { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 10px 0 0; }
+.m-ok { color: var(--green); } .m-warn { color: var(--amber); } .m-bad { color: var(--red); }
+.pass { color: var(--green); font-weight: 600; } .fail { color: var(--red); font-weight: 600; } .na { color: var(--muted); }
+.alert { color: var(--red); font-weight: 600; }
+.strip svg { display: block; width: 100%; height: 30px; border-radius: 8px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* ---------- tables ---------- */
+.scroll { overflow: auto; max-height: 480px; border-radius: var(--r-md); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+thead th { position: sticky; top: 0; z-index: 1; background: var(--soft); color: var(--muted); font-weight: 500; font-size: 11.5px; }
+tbody tr { transition: background .2s var(--ease); }
+tbody tr:hover { background: var(--blue-ghost); }
+td.num, th.num { text-align: right; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
+.chip { font: 500 11px/1 var(--sans); color: var(--ink-2); background: var(--soft); border-radius: 999px; padding: 5px 9px; }
+.chip.c-cluster { color: var(--blue); background: var(--blue-soft); }
+.chip.c-standin { color: #9a6408; background: var(--amber-soft); }
+.cell-note { color: var(--muted); font-size: 12px; }
+.score-pill { display: inline-block; min-width: 52px; text-align: center; padding: 3px 8px; border-radius: 999px; font-weight: 600; font-size: 12px; background: var(--soft); }
+.score-pill.q { background: var(--violet-soft); color: var(--violet); }
+
+button.btn { font: 600 12.5px/1 var(--sans); height: 34px; padding: 0 15px; border-radius: 999px; border: 0; background: var(--ink); color: #fff; cursor: pointer;
+  transition: transform .15s var(--ease), opacity .2s var(--ease); }
+button.btn:hover { opacity: .88; } button.btn:active { transform: scale(.97); }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* ---------- insight card (quantum) ---------- */
+.insight { position: relative; overflow: hidden; color: #fff; border: 0; padding: 0; display: flex; flex-direction: column; min-height: 420px;
+  background:
+    radial-gradient(80% 60% at 100% 0%, #ffb27a 0%, rgba(255, 178, 122, 0) 60%),
+    radial-gradient(70% 55% at 0% 30%, #ff8f6b 0%, rgba(255, 143, 107, 0) 65%),
+    radial-gradient(90% 70% at 30% 110%, #1d3fc9 0%, rgba(29, 63, 201, 0) 70%),
+    linear-gradient(160deg, #f2a066 0%, #c97c9d 38%, #6d7ee8 68%, #2848d8 100%); }
+.insight::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .32; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.insight::after { content: ""; position: absolute; right: -60px; top: -40px; width: 260px; height: 260px; pointer-events: none; border-radius: 40px;
+  transform: rotate(32deg); background: linear-gradient(160deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 55%);
+  border: 1px solid rgba(255, 255, 255, .35); opacity: .7; }
+.insight .in { position: relative; z-index: 1; display: flex; flex-direction: column; flex: 1; padding: 18px 20px 20px; }
+.insight .tag { background: rgba(255, 255, 255, .22); color: #fff; backdrop-filter: blur(6px); align-self: flex-start; }
+.insight .tag::before { display: none; }
+.insight .slide { margin-top: auto; }
+.insight .ins-big { font: 300 76px/1 var(--sans); letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.insight h3 { margin: 12px 0 8px; font: 500 20px/1.2 var(--sans); letter-spacing: -.02em; max-width: 22ch; }
+.insight p { margin: 0; font-size: 12.5px; opacity: .85; max-width: 40ch; }
+.insight .bars { display: flex; gap: 8px; margin-top: 22px; }
+.insight .bars button { flex: 1; height: 3px; padding: 0; border: 0; border-radius: 3px; background: rgba(255, 255, 255, .3); cursor: pointer; position: relative; overflow: hidden; }
+.insight .bars button i { position: absolute; inset: 0; width: 0; background: #fff; border-radius: 3px; }
+.insight .bars button.done i { width: 100%; }
+.insight .bars button.run i { animation: fillbar var(--slide-ms, 6000ms) linear forwards; }
+@keyframes fillbar { to { width: 100%; } }
+@media (prefers-reduced-motion: no-preference) { .insight .slide { animation: fade .6s var(--ease) both; } }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- quantum results section ---------- */
+.q-hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+.q-verdict { font: 500 30px/1.1 var(--sans); letter-spacing: -.035em; margin: 10px 0 10px; }
+.q-statement { color: var(--ink-2); font-size: 13.5px; line-height: 1.6; margin: 0; max-width: 70ch; }
+.q-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.checks { display: grid; gap: 8px; align-content: start; }
+.check { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: var(--r-md); background: var(--soft); }
+.check .ico { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; background: var(--faint); }
+.check.ok .ico { background: var(--green); } .check.no .ico { background: var(--red); } .check.wait .ico, .check.off .ico { background: var(--faint); }
+.check b { font-weight: 500; font-size: 13px; display: block; } .check span { font-size: 11.5px; color: var(--muted); }
+.check em { font-style: normal; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; text-align: right; }
+.q-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; }
+.forest svg { display: block; width: 100%; overflow: visible; }
+.forest text { font: 400 10.5px var(--sans); fill: var(--muted); }
+.forest text.lbl { fill: var(--ink-2); font-size: 11.5px; font-weight: 500; }
+.lb { max-height: none; }
+.lb td:first-child { min-width: 200px; }
+.lb td:first-child .cell-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
+.lb td.bar-cell { width: 26%; min-width: 130px; }
+.hbar { display: flex; align-items: center; gap: 8px; }
+.hbar .t { flex: 1; height: 8px; border-radius: 999px; background: var(--soft); overflow: hidden; }
+.hbar .f { height: 100%; border-radius: 999px; background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .3) 0 3px, transparent 3px 6px); }
+.hbar .f.q { background-color: var(--violet); } .hbar .f.c { background-color: var(--blue); } .hbar .f.n { background-color: var(--faint); }
+.hbar em { font-style: normal; min-width: 52px; text-align: right; font-size: 12px; }
+.kind { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; margin-left: 6px; vertical-align: 1px; }
+.kind.q { background: var(--violet-soft); color: var(--violet); } .kind.c { background: var(--blue-soft); color: var(--blue); }
+.kind.n { background: var(--soft-2); color: var(--muted); }
+.steps { counter-reset: s; display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; padding: 10px 12px; border-radius: var(--r-md); background: var(--soft); font-size: 12.5px; }
+.steps li::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 1px solid var(--line-2); font-size: 11px; font-weight: 600; }
+.steps code { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); background: #fff; border-radius: 6px; padding: 2px 6px; border: 1px solid var(--line); }
+
+/* ---------- scoreboard ---------- */
+.tabs { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); flex-wrap: wrap; }
+[role=tab] { height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); font: 500 12.5px/1 var(--sans); cursor: pointer; transition: background .3s var(--ease), color .3s var(--ease); }
+[role=tab]:hover { background: var(--soft); }
+[role=tab][aria-selected=true] { background: var(--ink); color: #fff; }
+.cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.sc-card h3 { margin: 0 0 10px; font: 500 14px/1.2 var(--sans); }
+.sc-card .ours-v { font: 400 34px/1 var(--sans); letter-spacing: -.04em; font-variant-numeric: tabular-nums; margin-bottom: 10px; }
+.sc-card .rows { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; font-size: 12px; color: var(--muted); }
+.sc-card .rows b { color: var(--ink-2); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.sc-card .d { margin-top: 10px; }
+.group-row td { background: var(--soft); font-weight: 600; font-size: 11.5px; color: var(--ink-2); }
+.range { display: block; color: var(--muted); font-size: 11px; }
+.empty { padding: 56px 24px; text-align: center; color: var(--muted); border: 1px dashed var(--line-2); border-radius: var(--r-card); background: var(--card); }
+footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1180px) {
+  .s-8, .s-7, .s-6, .s-5, .s-4, .s-3 { grid-column: span 6; } .r-2 { grid-row: auto; }
+  .bento > .s-8.funnel-card { grid-column: span 12; }
+  .q-hero, .q-grid { grid-template-columns: 1fr; }
+  .top { grid-template-columns: auto 1fr auto; } .nav { justify-self: center; overflow-x: auto; max-width: 100%; }
+}
+@media (max-width: 760px) {
+  .frame { margin: 0; border-radius: 0; padding: 14px 16px 32px; }
+  .s-8, .s-7, .s-6, .s-5, .s-4, .s-3, .bento > .s-8.funnel-card { grid-column: span 12; }
+  .top { grid-template-columns: minmax(0, 1fr) auto; position: static; margin: 0; padding: 0; background: none; backdrop-filter: none; }
+  .top > * { min-width: 0; }
+  .top-right .tag { white-space: normal; height: auto; padding: 4px 10px; line-height: 1.3; }
+  .nav { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; overflow-x: auto; background: var(--card); border: 1px solid var(--line); }
+  .head h1 { font-size: 32px; } .big { font-size: 38px; } .big.xl { font-size: 44px; } .insight .ins-big { font-size: 60px; }
+  .funnel-cols .fc b { font-size: 16px; } .funnel-cols .fc span { font-size: 10px; } .funnel-cols .fc { padding: 2px 6px 8px; }
+  .insight { min-height: 360px; }
+  .dots-wrap { padding-top: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { .live::after { animation: none; } .insight .bars button.run i { animation: none; width: 100%; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-more" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12.5" cy="8" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 16 16"><path d="M8 1.5l1.4 4.1 4.1 1.4-4.1 1.4L8 12.5 6.6 8.4 2.5 7l4.1-1.4zM13 11l.6 1.4 1.4.6-1.4.6L13 15l-.6-1.4L11 13l1.4-.6z" fill="currentColor"/></symbol>
+  <symbol id="i-board" viewBox="0 0 16 16"><path d="M2.5 13.5h11M4.5 11V7M8 11V3.5M11.5 11V6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 1.8l5 1.9v4c0 3.1-2.1 5.5-5 6.5-2.9-1-5-3.4-5-6.5v-4z" fill="#fff"/></symbol>
+</svg>
+
+<div class="frame">
+  <header class="top" role="banner">
+    <a class="logo" href="#overview" aria-label="RiskFabric console home"><span class="logo-mark"><svg><use href="#i-shield"/></svg></span>riskfabric<small>console</small></a>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <a href="#overview" class="is-active">Overview</a>
+      <a href="#operations">Operations</a>
+      <a href="#holds-sec">Hold queue</a>
+      <a href="#quantum">Quantum</a>
+      <a href="#ledger-card">Ledger</a>
+      <a href="#quantum">Scoreboard</a>
+    </nav>
+    <div class="top-right">
+      <span id="level" class="tag lvl-NORMAL" title="Sentinel load level">NORMAL</span>
+      <a class="icon-btn" href="#quantum" title="Scoreboard" aria-label="Scoreboard"><svg><use href="#i-board"/></svg></a>
+      <span class="live" title="Live: panels refresh every second" aria-label="live"></span>
+    </div>
+  </header>
+
+  <section class="head" id="overview" aria-labelledby="h-over">
+    <div>
+      <h1 id="h-over">Overview <span class="chip-ico" title="Read-only: the console never changes a decision"><svg><use href="#i-link"/></svg></span></h1>
+      <p>Live payment shield. <span id="sys-line">System not set</span>.</p>
+    </div>
+    <div class="controls">
+      <span class="pill"><svg><use href="#i-clock"/></svg><span class="win">last 60 s</span></span>
+      <span class="between">window</span>
+      <div class="seg" id="window-seg" role="group" aria-label="Time window">
+        <button type="button" data-win="60" class="is-active">60s</button>
+        <button type="button" data-win="300">5m</button>
+        <button type="button" data-win="900">15m</button>
+        <button type="button" data-win="3600">1h</button>
+      </div>
+      <span class="pill"><span class="k">System</span> <b id="system">not set</b></span>
+    </div>
+  </section>
+
+  <div class="bento">
+    <!-- the payment funnel: edge in, edge out, decided, not held, allowed -->
+    <section class="card s-8 funnel-card" aria-labelledby="h-funnel">
+      <div class="card-h"><h2 id="h-funnel">Payments <small class="win">last 60 s</small></h2><a class="more" href="#operations" aria-label="Edge and decision details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="funnel" id="funnel">
+        <div class="funnel-cols" id="funnel-cols"></div>
+        <svg id="funnel-svg" viewBox="0 0 700 200" preserveAspectRatio="none" role="img" aria-label="Payment funnel"></svg>
+        <div class="tip" id="funnel-tip" hidden></div>
+      </div>
+      <div class="ask" aria-live="polite">
+        <div class="ask-h"><svg><use href="#i-spark"/></svg>What Sentinel sees right now</div>
+        <div class="ask-body" id="sentinel-line">Waiting for the first Sentinel reading…</div>
+      </div>
+    </section>
+
+    <!-- decisions: big total and striped split -->
+    <section class="card s-4" aria-labelledby="h-dec">
+      <div class="card-h"><h2 id="h-dec">Decisions <small class="win">last 60 s</small></h2><a class="more" href="#latency-card" aria-label="Latency details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="big-row"><span class="big xl" id="dec-total">-</span><span class="delta" id="dec-hold-rate" title="Hold rate over the last 60 s against the cap">-</span></div>
+      <div class="meter" id="dec-meter"></div>
+      <p class="note" id="dec-paths"></p>
+    </section>
+
+    <!-- edge traffic over time: stepped line with hatch -->
+    <section class="card s-3 r-2" aria-labelledby="h-traffic">
+      <div class="card-h"><h2 id="h-traffic">Traffic</h2><a class="more" href="#edge-card" aria-label="Edge details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="step" id="traffic-step"></div>
+      <div class="axis" id="traffic-axis"></div>
+    </section>
+
+    <!-- passed at the edge: dot matrix -->
+    <section class="card s-5" aria-labelledby="h-edge">
+      <div class="card-h"><h2 id="h-edge">Passed the edge</h2><a class="more" href="#edge-card" aria-label="Edge details"><svg><use href="#i-more"/></svg></a></div>
+      <div class="dots-wrap">
+        <span class="big" id="edge-passed">-</span>
+        <div class="dots" id="edge-dots"></div>
+        <div class="vs">shed<b id="edge-shed">-</b></div>
+      </div>
+    </section>
+
+    <!-- the quantum challenger, as the insight card -->
+    <section class="card s-4 r-2 insight" aria-labelledby="h-insight" id="insight">
+      <div class="in">
+        <span class="tag" id="h-insight">Quantum insight · shadow only</span>
+        <div class="slide" id="insight-slide"><div class="ins-big">-</div><h3>Loading the quantum challenger…</h3><p></p></div>
+        <div class="bars" id="insight-bars" role="tablist" aria-label="Quantum insights"></div>
+      </div>
+    </section>
+
+    <!-- held payments: dot matrix -->
+    <section class="card s-5" aria-labelledby="h-held">
+      <div class="card-h"><h2 id="h-held">Held payments</h2><a class="more" href="#holds-sec" aria-label="Hold queue"><svg><use href="#i-more"/></svg></a></div>
+      <div class="dots-wrap">
+        <span class="big" id="held-count">-</span>
+        <div class="dots" id="held-dots"></div>
+        <div class="vs">stand-in<b id="held-standin">-</b></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="section-h" id="operations"><h2>Operations</h2><p>In request-path order: perimeter, edge, decision, bank, ledger.</p></div>
+  <div class="bento">
+    <section class="card s-12" aria-labelledby="h-load">
+      <div class="card-h"><h2 id="h-load">Load level <small>Sentinel, one reading a second · <span class="win">last 60 s</span></small></h2></div>
+      <div class="strip" id="load-chart"></div>
+      <div class="axis" id="load-axis"></div>
+      <div class="legend"><span><i style="background:var(--normal)"></i>NORMAL</span><span><i style="background:var(--surge)"></i>SURGE</span><span><i style="background:var(--coord)"></i>COORDINATED</span></div>
+      <p class="note" id="clusters"></p>
+    </section>
+
+    <section class="card s-4" aria-labelledby="h-perim">
+      <div class="card-h"><h2 id="h-perim">Perimeter <small>CDN · WAF · gateway</small></h2></div>
+      <div id="perimeter" class="kv"></div>
+      <p id="perimeter-note" class="note"></p>
+    </section>
+
+    <section class="card s-4" id="edge-card" aria-labelledby="h-edge2">
+      <div class="card-h"><h2 id="h-edge2">Edge <small class="win">last 60 s</small></h2></div>
+      <div id="edge-totals" class="kv"></div>
+      <div class="meter" id="edge-meter"></div>
+    </section>
+
+    <section class="card s-4" id="latency-card" aria-labelledby="h-lat">
+      <div class="card-h"><h2 id="h-lat">Latency &amp; deadline <small class="win">last 60 s</small></h2></div>
+      <div id="latency" class="kv"></div>
+      <p class="note">Payment deadline 100&nbsp;ms; client p99 target ≤ 50&nbsp;ms at the base rate.</p>
+    </section>
+
+    <section class="card s-4" aria-labelledby="h-bank">
+      <div class="card-h"><h2 id="h-bank">Bank books <small>the bank's own record</small></h2></div>
+      <div id="bank" class="kv"></div>
+      <p id="bank-note" class="note"></p>
+    </section>
+
+    <section class="card s-4" id="ledger-card" aria-labelledby="h-ledger">
+      <div class="card-h"><h2 id="h-ledger">Ledger <small>hash-chained, verifiable</small></h2></div>
+      <div id="ledger" class="kv"></div>
+      <p class="note" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button id="verify-btn" type="button" class="btn">Verify the chain</button> <span id="verify-result" aria-live="polite"></span></p>
+    </section>
+
+    <section class="card s-4" aria-labelledby="h-shield">
+      <div class="card-h"><h2 id="h-shield">Shield agreement <small>bank engine vs our shadow score</small></h2></div>
+      <div id="shield" class="kv"></div>
+      <p class="note">Our classical model scores every payment in shadow; it never changes the bank's decision.</p>
+    </section>
+  </div>
+
+  <div class="section-h" id="holds-sec"><h2>Hold queue</h2><p>Most urgent first, with the quantum challenger's shadow score beside the classical one.</p></div>
+  <section class="card" aria-label="Hold queue">
+    <p class="note" id="challenger-label" style="margin:0 0 12px">Quantum challenger (research, simulated 8 qubits); does not affect decisions</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Payment</th><th class="num">Amount</th><th class="num">Classical</th><th class="num">Challenger</th><th>Reason codes &amp; case note</th></tr></thead>
+      <tbody id="holds"><tr><td colspan="5" class="muted">No held payments yet.</td></tr></tbody>
+    </table></div>
+  </section>
+
+  <div class="section-h" id="quantum"><h2>Quantum challenger results</h2><p>Pre-registered gate against matched classical controls. Research only: simulated 8 qubits, shadow only.</p></div>
+  <div id="quantum-results"></div>
+</div>
+<script>
+// DEMO DATA FEED: sample numbers generated in the browser, not a measurement.
+(function(){
+const QSUM = {
+ "generated_ts": 1792309992.9921196,
+ "verdict": "NO ADVANTAGE FOUND",
+ "statement": "No advantage found. On HI-Small, our 8-qubit quantum challenger did not beat classical controls with the same inputs (details and intervals in RESULTS.md).",
+ "rerank_allowed": false,
+ "random_order_recall": 0.01764705882352941,
+ "rows": [
+  {
+   "model": "QK-1",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.45811467781000675,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K1",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.1418696219510954,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QP-1",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.5379414911850754,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K4",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.1532348536584766,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QP-1a",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.4457387180403774,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K2",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.2358875975618303,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K0",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.443266737017711,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.006590829268755376,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K1",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.45616163626121287,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.008864768292868376,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K2",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.45458520174747835,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.009269975610151028,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K4",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.5834759155185748,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.010912804878155772,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K3",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.3569611848233798,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 3.087804942901485e-05,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "N1",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.5201361701779144,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": null,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QK-1",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.45811467781000675,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K1",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.14908013414691507,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QP-1",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.5379414911850754,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K4",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.15422315853706228,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QP-1a",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.4457387180403774,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K2",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.14220554878120975,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K0",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.443266737017711,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.0054956097553657875,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K1",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.45616163626121287,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.004992731706396426,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K2",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.48686327077686703,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.006422512195435623,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K4",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.6007149408014575,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.0066226707309485905,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K3",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.3569611848233798,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 2.6902440123837838e-05,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "N1",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.47038150597172684,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": null,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QK-1",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.45811467781000675,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K1",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.14814908536625188,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QP-1",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.5379414911850754,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K4",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.14757719512134626,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "QP-1a",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.4457387180403774,
+   "precision_at_cap": 0.4186046511627907,
+   "control": "K2",
+   "diff_vs_control": 0.0,
+   "diff_ci95": [
+    0.0,
+    0.0
+   ],
+   "ms_per_item": 0.14307674390271663,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K0",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.443266737017711,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.005360390243767164,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K1",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.45616163626121287,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.004528804878169112,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K2",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.4594638359458924,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.006268646342693789,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K4",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.5693876118214065,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.006133012194401623,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "K3",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "s",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.3569611848233798,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 1.9682928024583194e-05,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  },
+  {
+   "model": "N1",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 86,
+   "n_test": 82,
+   "recall_at_cap": 0.01764705882352941,
+   "pr_auc": 0.5494570175577943,
+   "precision_at_cap": 0.4186046511627907,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": null,
+   "qpu_seconds": 0,
+   "protocol_commit": "86fe0fb5bb29",
+   "command": "python -m quantum.research.evaluate test --candidates /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_candidates.csv --capacity /tmp/claude-0/-home-user-quantum-riskfabric/fbae01a0-a03c-57e3-939b-1aa8f41b870c/scratchpad/out/aml/features/qml_capacity.csv",
+   "commit": "86fe0fb"
+  }
+ ],
+ "gate_file": "quantum/GATE.md"
+};
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const edge = {}, dec = {}, threat = {};
+function emit(sec){
+  const attack = (sec % 120) > 70 && (sec % 120) < 95;
+  const n = Math.round(60 + 25*Math.abs(((sec/7)%2)-1) + (attack?140:0));
+  const e=[0,0,0], d=[0,0,0,0,0,0];
+  for(let i=0;i<n;i++){ const r=rnd(); const st = r > (attack?0.45:0.03) ? 0 : (rnd()<.5?1:2); e[st]++;
+    if(st===0 && rnd()<.97){ const a=rnd(); d[a<.018?2:a<.09?1:0]++; d[3]+= rnd()<.02?1:0; d[5]++; } }
+  edge[sec]=e; dec[sec]=d; threat[sec]= attack?"COORDINATED":"NORMAL";
+}
+const now0 = Math.floor(Date.now()/1000);
+for(let s=now0-3600;s<=now0;s++) emit(s);
+setInterval(()=>emit(Math.floor(Date.now()/1000)),1000);
+function series(store, start, keys){ const hi=Math.floor(Date.now()/1000), w=Math.max(1,Math.ceil((hi-start)/90)), out={};
+  for(let s=start;s<=hi;s++){ const b=store[s]; if(!b) continue; const col=Math.floor((s-start)/w); const row=out[col]||(out[col]={ts:start+col*w}); keys.forEach(([k,i])=>row[k]=(row[k]||0)+b[i]); }
+  return Object.keys(out).sort((a,b)=>a-b).map(k=>out[k]); }
+const holds = Array.from({length:9},(_,k)=>({txn_id:"t-"+String(900000+k).padStart(9,"0"), queue_score:.95-k*.04, score:+(.95-k*.04).toFixed(3),
+  amount:+(800+rnd()*8000).toFixed(2), currency:"USD", from_acct:"acct-"+Math.floor(rnd()*999), to_acct:"pay-"+Math.floor(rnd()*9999),
+  tier:k%2?"high":"medium", cluster:k%3?null:"c-17", stand_in:k===4, reasons:["fan-out burst","new counterparty"].concat(k%3?[]:["cluster c-17"]),
+  note:"Held: fan-out burst, new counterparty; account tier "+(k%2?"high":"medium")+".",
+  challenger: k===6?null:{score:+(.3+rnd()*.6).toFixed(3),status:"ok",backend:"numpy-statevector",model:"qp1-v1"}}));
+function api(path){
+  const u=new URL(path,location.href), sec=+(u.searchParams.get("seconds")||60), n=+(u.searchParams.get("n")||60), now=Math.floor(Date.now()/1000), start=now-sec;
+  const p=u.pathname;
+  if(p==="/api/meta") return {system:"shield"};
+  if(p==="/api/threat"){ const out=[]; for(let s=now-n+1;s<=now;s++){ const lv=threat[s]||"NORMAL"; out.push({ts:s,level:lv,n_clusters:lv==="NORMAL"?0:1,clusters:lv==="NORMAL"?[]:[{id:"c-17",key_type:"fingerprint",action:"throttle",share:.41,risk:.91}]}); } return {entries:out}; }
+  if(p==="/api/edge"){ const t={passed:0,throttled:0,blocked:0}; for(let s=start;s<=now;s++){const b=edge[s]; if(b){t.passed+=b[0];t.throttled+=b[1];t.blocked+=b[2];}} return {totals:t,seconds:sec,series:series(edge,start,[["passed",0],["throttled",1],["blocked",2]])}; }
+  if(p==="/api/decisions"){ const c={ALLOW:0,VERIFY:0,HOLD:0}; let si=0,tot=0,h60=0,t60=0; for(let s=start;s<=now;s++){const b=dec[s]; if(b){c.ALLOW+=b[0];c.VERIFY+=b[1];c.HOLD+=b[2];si+=b[3];tot+=b[5];}}
+    for(let s=now-60;s<=now;s++){const b=dec[s]; if(b){h60+=b[2];t60+=b[5];}} const hr=t60?100*h60/t60:0;
+    return {counts:c,paths:{engine:tot-si,stand_in:si},stand_in:si,deadline_miss:0,total:tot,seconds:sec,series:series(dec,start,[["ALLOW",0],["VERIFY",1],["HOLD",2]]),
+      latency_ms:{p50:+(14+rnd()*4).toFixed(1),p95:+(26+rnd()*4).toFixed(1),p99:+(31+rnd()*6).toFixed(1)},hold_rate_60s_pct:+hr.toFixed(3),hold_cap_pct:2,hold_alert:hr>2}; }
+  if(p==="/api/perimeter") return {reachable:true,received:182000,passed:151200,stopped:{cdn:{rate:21000},waf:{"sql injection":340},gateway:{auth:9460}}};
+  if(p==="/api/bank") return {books:{posted_count:41230,posted_value:5210442,fail_open_count:0},engine_p99_ms:12.4,recent_timeouts:0,recent_fail_open:0,reachable:true};
+  if(p==="/api/ledger") return {head:"9f2c41ab77e0d3c5",records:80412};
+  if(p==="/api/shield") return {pairs:40210,agreement:.962,shadow_would_hold:31,shadow_would_release:12};
+  if(p==="/api/holds") return {holds,challenger_label:"Quantum challenger (research, simulated 8 qubits); does not affect decisions"};
+  if(p==="/api/quantum/summary") return QSUM;
+  return null;
+}
+window.fetch = async (path, opt) => {
+  if (String(path).includes("/api/ledger/verify")) return {ok:true, json: async()=>({ok:true,records:80412})};
+  const d = api(path); return {ok: d!=null, json: async()=>d};
+};
+})();
+</script><script>// Quantum challenger results, shared by the console and the scoreboard. Renders quantum/results/summary.json as it
+// is (prd/05 Part 7): per-model means over the seeds, the matched comparisons with their 95% intervals, and the gate's
+// own checks. The only arithmetic is averaging the seeds for display; the verdict always comes from the gate.
+"use strict";
+(function () {
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const pct = (v, d = 1) => (v == null || Number.isNaN(v) ? "-" : (100 * v).toFixed(d) + "%");
+  const pts = (v, d = 2) => (v == null ? "-" : (v >= 0 ? "+" : "") + (100 * v).toFixed(d) + " pts");
+  const num = (v, d = 3) => (v == null || Number.isNaN(v) ? "-" : Number(v).toFixed(d));
+  const mean = (a) => { const x = a.filter((v) => v != null && !Number.isNaN(v)); return x.length ? x.reduce((s, v) => s + v, 0) / x.length : null; };
+
+  // What each model is (quantum/research/models.py), and which kind of bar it gets.
+  const INFO = {
+    "QP-1": ["quantum", "Projected quantum features + classical score"],
+    "QK-1": ["quantum", "Fidelity quantum kernel, SVM"],
+    "QP-1a": ["quantum", "Projected quantum features only"],
+    "K4": ["classical", "Classical score + 15 random Fourier features (matched to QP-1)"],
+    "K1": ["classical", "RBF-kernel SVM (matched to QK-1)"],
+    "K2": ["classical", "15 random Fourier features (matched to QP-1a)"],
+    "K0": ["classical", "Logistic regression on the 8 inputs (floor)"],
+    "K3": ["classical", "The classical score alone: today's analyst order"],
+    "N1": ["control", "QP-1 on shuffled labels (negative control)"],
+  };
+  const ORDER = ["QP-1", "K4", "QK-1", "K1", "QP-1a", "K2", "K3", "K0", "N1"];
+  const PAIRS = [["QP-1", "K4", "the gate"], ["QK-1", "K1", ""], ["QP-1a", "K2", ""]];
+  const kindCls = (k) => (k === "quantum" ? "q" : k === "classical" ? "c" : "n");
+
+  function verdictTone(v) {
+    if (!v) return "plain";
+    if (v === "PASS") return "ok";
+    if (v.startsWith("VOID")) return "bad";
+    return "warn";
+  }
+
+  // Group the per-seed rows, and recover the gate's checks from the rows when an older summary lacks them.
+  function digest(S) {
+    const rows = (S && S.rows) || [];
+    const by = {};
+    rows.forEach((r) => { (by[r.model] = by[r.model] || []).push(r); });
+    const models = Object.keys(by).sort((a, b) => (ORDER.indexOf(a) + 99 * (ORDER.indexOf(a) < 0)) - (ORDER.indexOf(b) + 99 * (ORDER.indexOf(b) < 0)));
+    const agg = models.map((m) => {
+      const rs = by[m];
+      return { model: m, kind: (INFO[m] || ["classical"])[0], what: (INFO[m] || [, ""])[1], seeds: rs.map((r) => r.seed),
+        inputs: rs[0].inputs, backend: rs[0].backend, control: rs[0].control,
+        recall: mean(rs.map((r) => r.recall_at_cap)), precision: mean(rs.map((r) => r.precision_at_cap)),
+        pr_auc: mean(rs.map((r) => r.pr_auc)), ms: mean(rs.map((r) => r.ms_per_item)),
+        cmp: rs.filter((r) => r.diff_vs_control != null).map((r) => ({ seed: r.seed, diff: r.diff_vs_control, ci: r.diff_ci95 })) };
+    });
+    const get = (m) => agg.find((a) => a.model === m);
+    const minGain = S && S.min_gain != null ? S.min_gain : 0.02;
+    const tol = S && S.sanity_tolerance != null ? S.sanity_tolerance : 0.03;
+    const beats = (m) => { const a = get(m); return !!(a && a.cmp.length && a.cmp.every((c) => c.diff >= minGain && c.ci && c.ci[0] > 0)); };
+    const n1 = (S && S.n1_recall) || (by["N1"] || []).map((r) => r.recall_at_cap);
+    const rand = S ? S.random_order_recall : null;
+    const commit = (S && S.protocol_commit) || (rows[0] && rows[0].protocol_commit) || null;
+    const gate = Object.assign({ qp1_beats: beats("QP-1"), qk1_beats: beats("QK-1"),
+      sanity_ok: n1.length > 0 && rand != null && n1.every((x) => Math.abs(x - rand) <= tol),
+      protocol_committed: !!commit && commit !== "UNCOMMITTED" }, (S && S.gate) || {});
+    return { agg, get, gate, n1, rand, commit, minGain, tol };
+  }
+
+  // Forest plot: each matched comparison, one line per seed, the difference in recall at capacity with its 95% interval.
+  function forest(D) {
+    const items = [];
+    PAIRS.forEach(([a, b, note]) => { const g = D.get(a); if (g && g.cmp.length) items.push({ a, b, note, cmp: g.cmp }); });
+    if (!items.length) return `<p class="note">No matched comparisons in this run.</p>`;
+    let lo = -D.minGain, hi = D.minGain * 2;
+    items.forEach((it) => it.cmp.forEach((c) => { const l = c.ci ? c.ci[0] : c.diff, h = c.ci ? c.ci[1] : c.diff; lo = Math.min(lo, l, c.diff); hi = Math.max(hi, h, c.diff); }));
+    const pad = (hi - lo) * 0.08 || 0.01; lo -= pad; hi += pad;
+    const W = 560, L = 118, R = 16, rowH = 18, gap = 16;
+    let y = 22, body = "";
+    const X = (v) => L + ((v - lo) / (hi - lo)) * (W - L - R);
+    items.forEach((it) => {
+      const top = y;
+      body += `<text class="lbl" x="0" y="${y + 9}">${esc(it.a)} vs ${esc(it.b)}</text>${it.note ? `<text x="0" y="${y + 23}">${esc(it.note)}</text>` : ""}`;
+      it.cmp.forEach((c) => {
+        const cy = y + 6, l = c.ci ? c.ci[0] : c.diff, h = c.ci ? c.ci[1] : c.diff;
+        const good = c.diff >= D.minGain && c.ci && c.ci[0] > 0;
+        const col = good ? "var(--green)" : it.a.startsWith("Q") ? "var(--violet)" : "var(--blue)";
+        body += `<g><title>${esc(it.a)} vs ${esc(it.b)}, seed ${c.seed}: ${pts(c.diff)} [${c.ci ? pts(c.ci[0]) + ", " + pts(c.ci[1]) : "-"}]</title>
+          <line x1="${X(l).toFixed(1)}" x2="${X(h).toFixed(1)}" y1="${cy}" y2="${cy}" stroke="${col}" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+          <circle cx="${X(c.diff).toFixed(1)}" cy="${cy}" r="4.5" fill="#fff" stroke="${col}" stroke-width="2"/>
+          <text x="${W}" y="${cy + 3.5}" text-anchor="end">s${esc(c.seed)}</text></g>`;
+        y += rowH;
+      });
+      y += gap;
+      body = `<rect x="${L - 6}" y="${top - 4}" width="${W - L - R + 12}" height="${y - top - gap + 4}" rx="8" fill="var(--soft)"/>` + body;
+    });
+    const H = y + 8;
+    const zero = X(0), thr = X(D.minGain);
+    const axis = `<line x1="${zero}" x2="${zero}" y1="14" y2="${H - 22}" stroke="var(--ink-2)" stroke-width="1"/>
+      <line x1="${thr}" x2="${thr}" y1="14" y2="${H - 22}" stroke="var(--green)" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="${zero}" y="10" text-anchor="middle">0</text><text x="${thr}" y="10" text-anchor="middle" style="fill:var(--green)">+${(100 * D.minGain).toFixed(0)} pts needed</text>
+      <text x="${L}" y="${H - 6}">${pts(lo, 1)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${pts(hi, 1)}</text>`;
+    return `<div class="forest"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Matched comparisons: difference in recall at capacity with 95% intervals">${axis}${body}</svg></div>
+      <div class="legend"><span><i style="background:var(--green)"></i>meets the rule (≥ +${(100 * D.minGain).toFixed(0)} pts, interval above 0)</span><span><i style="background:var(--violet)"></i>quantum model short of the rule</span></div>`;
+  }
+
+  // Leaderboard: per-model means over the seeds. Bars are scaled to the best value shown in each column.
+  function leaderboard(D) {
+    const maxR = Math.max(1e-9, ...D.agg.map((a) => a.recall || 0), D.rand || 0);
+    const maxP = Math.max(1e-9, ...D.agg.map((a) => a.pr_auc || 0));
+    const bar = (v, max, cls, txt) => `<div class="hbar"><div class="t"><div class="f ${cls}" style="width:${v == null ? 0 : Math.max(2, (100 * v) / max).toFixed(1)}%"></div></div><em>${txt}</em></div>`;
+    const rows = D.agg.map((a) => {
+      const k = kindCls(a.kind);
+      return `<tr title="${esc(a.what)}"><td><b>${esc(a.model)}</b><span class="kind ${k}">${esc(a.kind)}</span><div class="cell-note">${esc(a.what)}</div></td>
+        <td class="bar-cell">${bar(a.recall, maxR, k, pct(a.recall))}</td>
+        <td class="num">${pct(a.precision)}</td>
+        <td class="bar-cell">${bar(a.pr_auc, maxP, k, num(a.pr_auc))}</td>
+        <td class="num">${a.ms == null ? "-" : num(a.ms, 2)}</td></tr>`;
+    }).join("");
+    const randRow = D.rand == null ? "" : `<tr><td><b>Random order</b><span class="kind n">baseline</span><div class="cell-note">What capacity catches with no ranking at all</div></td>
+      <td class="bar-cell">${bar(D.rand, maxR, "n", pct(D.rand))}</td><td class="num">-</td><td class="bar-cell"></td><td class="num">-</td></tr>`;
+    return `<div class="scroll lb"><table><thead><tr><th>Model</th><th>Recall at capacity</th><th class="num">Precision at capacity</th><th>PR-AUC</th><th class="num">ms / item</th></tr></thead>
+      <tbody>${rows}${randRow}</tbody></table></div><p class="note">Means over seeds ${esc([...new Set(D.agg.flatMap((a) => a.seeds))].join(", "))}, on the test split. Hover a row for what the model is.</p>`;
+  }
+
+  function checks(D, S) {
+    const w = S && S.worker;
+    const items = S ? [
+      [D.gate.sanity_ok, "Negative control is sane", "N1 (shuffled labels) lands near a random ordering",
+        D.n1.length ? `${D.n1.map((x) => pct(x)).join(" · ")} vs ${pct(D.rand)}` : "-"],
+      [D.gate.protocol_committed, "Protocol committed before testing", "quantum/PROTOCOL.md, checked by the code", D.commit ? esc(D.commit) : "-"],
+      [D.gate.qp1_beats, "QP-1 beats K4 on every seed", `≥ +${(100 * D.minGain).toFixed(0)} pts of recall at capacity, interval above 0`, D.get("QP-1") ? pts(mean(D.get("QP-1").cmp.map((c) => c.diff))) + " avg" : "-"],
+      [D.gate.qk1_beats, "QK-1 beats K1 on every seed", "Same rule, reported alongside", D.get("QK-1") ? pts(mean(D.get("QK-1").cmp.map((c) => c.diff))) + " avg" : "-"],
+      [S.rerank_allowed ? true : "off", "Live re-ranking allowed", "Only on a PASS with worker p99 ≤ 1,000 ms", w && w.p99_ms != null ? `p99 ${num(w.p99_ms, 1)} ms` : "shadow only"],
+    ] : [
+      [null, "Negative control is sane", "N1 within 3 pts of a random ordering", "not run"],
+      [null, "Protocol committed before testing", "quantum/PROTOCOL.md", "not run"],
+      [null, "QP-1 beats K4 on every seed", "≥ +2 pts of recall at capacity, interval above 0", "not run"],
+      [null, "Live re-ranking allowed", "Only on a PASS", "shadow only"],
+    ];
+    return `<div class="checks">${items.map(([ok, t, s, v]) => `<div class="check ${ok == null ? "wait" : ok === "off" ? "off" : ok ? "ok" : "no"}"><span class="ico" aria-hidden="true">${ok == null ? "…" : ok === "off" ? "–" : ok ? "✓" : "✕"}</span><div><b>${esc(t)}</b><span>${esc(s)}</span></div><em>${v}</em></div>`).join("")}</div>`;
+  }
+
+  // Live shadow re-scoring, from the hold queue the console already reads.
+  function liveStats(holds) {
+    holds = holds || [];
+    const scored = holds.filter((h) => h.challenger && h.challenger.status === "ok" && h.challenger.score != null);
+    const both = scored.filter((h) => h.score != null);
+    const avg = mean(scored.map((h) => h.challenger.score));
+    // how often the two scores put a held payment on the same side of their own medians
+    let agree = null;
+    if (both.length >= 4) {
+      const med = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+      const mc = med(both.map((h) => h.score)), mq = med(both.map((h) => h.challenger.score));
+      agree = both.filter((h) => (h.score >= mc) === (h.challenger.score >= mq)).length / both.length;
+    }
+    return { n: holds.length, scored: scored.length, avg, agree, model: (scored[0] && scored[0].challenger.model) || "qp1-v1",
+      backend: (scored[0] && scored[0].challenger.backend) || "numpy-statevector" };
+  }
+
+  function renderResults(el, S, holds) {
+    if (!el) return;
+    const D = digest(S);
+    const L = liveStats(holds);
+    const tone = verdictTone(S && S.verdict);
+    const live = holds === undefined ? "" : `<section class="card s-12" aria-label="Live shadow re-scoring">
+        <div class="card-h"><h2>Live shadow re-scoring <small>the worker re-scores held payments; it never changes a decision</small></h2></div>
+        <div class="kv"><div><span>held re-scored</span><b>${L.scored} / ${L.n}</b></div><div><span>avg challenger score</span><b>${num(L.avg)}</b></div>
+        <div><span>agrees with classical</span><b title="Share of held payments both scores put on the same side of their medians">${L.agree == null ? "-" : pct(L.agree, 0)}</b></div>
+        <div><span>model · backend</span><b style="font-size:15px">${esc(L.model)} · ${esc(L.backend)}</b></div></div></section>`;
+    if (!S || !S.verdict) {
+      el.innerHTML = `<div class="bento"><section class="card s-12"><div class="q-hero"><div>
+          <div class="q-tags"><span class="tag plain">gate not run</span><span class="tag violet">8 qubits · 2 layers · exact statevector</span></div>
+          <div class="q-verdict">Awaiting the quantum gate</div>
+          <p class="q-statement">No test-split result is published yet. The verdict is computed by the pre-registered gate, never written by hand. Run these on the VM, in order, once the classical export exists:</p>
+          <ol class="steps" style="margin-top:12px">
+            <li><span>Unit checks, numpy against Qiskit <code>python -m quantum.research.evaluate checks</code></span></li>
+            <li><span>Tune on validation only <code>python -m quantum.research.evaluate tune</code></span></li>
+            <li><span>Freeze and commit the protocol <code>python -m quantum.research.evaluate freeze</code></span></li>
+            <li><span>Test under the committed protocol <code>python -m quantum.research.evaluate test</code></span></li>
+            <li><span>Worker latency for the re-rank rule <code>python -m quantum.research.evaluate bench</code></span></li>
+          </ol></div>${checks(D, null)}</div></section>${live}</div>`;
+      return;
+    }
+    const qp = D.get("QP-1"), k4 = D.get("K4"), k3 = D.get("K3");
+    const bestQ = D.agg.filter((a) => a.kind === "quantum").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
+    const bestC = D.agg.filter((a) => a.kind === "classical").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
+    const when = S.generated_ts ? new Date(S.generated_ts * 1000).toLocaleString() : "";
+    el.innerHTML = `<div class="bento">
+      <section class="card s-12" aria-label="Quantum gate verdict"><div class="q-hero"><div>
+        <div class="q-tags"><span class="tag ${tone}">${esc(S.verdict)}</span><span class="tag ${S.rerank_allowed ? "ok" : "plain"}">${S.rerank_allowed ? "re-rank allowed" : "shadow only"}</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}${when ? `<span class="tag plain">${esc(when)}</span>` : ""}</div>
+        <div class="q-verdict">${tone === "ok" ? "The quantum feature map helped on this data" : tone === "bad" ? "This run is void" : "No advantage over matched classical controls"}</div>
+        <p class="q-statement">${esc(S.statement || "")}</p>
+        <div class="kv" style="margin-top:16px">
+          <div><span>QP-1 recall at capacity</span><b>${pct(qp && qp.recall)}</b></div>
+          <div><span>K4 (its matched control)</span><b>${pct(k4 && k4.recall)}</b></div>
+          <div><span>Classical score alone (K3)</span><b>${pct(k3 && k3.recall)}</b></div>
+          <div><span>Best PR-AUC, quantum vs classical</span><b>${num(bestQ && bestQ.pr_auc)} <small class="muted">vs</small> ${num(bestC && bestC.pr_auc)}</b></div>
+        </div></div>${checks(D, S)}</div></section>
+      <section class="card s-5" aria-label="Matched comparisons"><div class="card-h"><h2>Matched comparisons <small>difference in recall at capacity, 95% paired bootstrap</small></h2></div>${forest(D)}</section>
+      <section class="card s-7" aria-label="Models and controls"><div class="card-h"><h2>Models and controls <small>test split</small></h2></div>${leaderboard(D)}</section>
+      ${live}</div>
+      <p class="note">Full gate text: <span class="mono">${esc(S.gate_file || "quantum/GATE.md")}</span>. Even a PASS is not a quantum computational advantage: 8 qubits are simulated exactly on a classical machine.</p>`;
+  }
+
+  // Slides for the console's insight card.
+  function slides(S, holds) {
+    const L = liveStats(holds);
+    const out = [];
+    if (S && S.verdict) {
+      const D = digest(S), qp = D.get("QP-1");
+      const avgDiff = qp && qp.cmp.length ? mean(qp.cmp.map((c) => c.diff)) : null;
+      out.push({ big: pct(qp && qp.recall, 0), title: `QP-1 recall at analyst capacity, ${pts(avgDiff, 1)} vs K4`,
+        text: `Gate verdict: ${S.verdict}. ${S.rerank_allowed ? "Re-ranking is allowed." : "Shadow only: it never changes a decision."}` });
+      out.push({ big: D.gate.sanity_ok ? "OK" : "VOID", title: "Negative control lands on a random ordering",
+        text: `N1 ${D.n1.map((x) => pct(x)).join(" · ") || "-"} against random ${pct(D.rand)}. The protocol was ${D.gate.protocol_committed ? "committed before testing" : "NOT committed"}.` });
+    } else {
+      out.push({ big: "8q", title: "Quantum gate not run yet", text: "8 qubits, 2 layers, simulated exactly. The verdict will come from the pre-registered gate, never by hand." });
+    }
+    out.push({ big: L.n ? `${L.scored}/${L.n}` : "0", title: "Held payments re-scored by the challenger right now",
+      text: L.avg == null ? "No challenger scores in the hold queue yet." : `Average challenger score ${num(L.avg)}${L.agree == null ? "" : `; agrees with the classical side ${pct(L.agree, 0)} of the time`}.` });
+    return out;
+  }
+
+  window.RFQuantum = { renderResults, slides, digest };
+})();
+</script><script>// RiskFabric console: polls the read-only /api routes and draws small inline SVG charts. No libraries.
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "-" : Number(v).toLocaleString(undefined, { maximumFractionDigits: d, minimumFractionDigits: 0 }));
+const compact = (v) => (v == null || Number.isNaN(v) ? "-" : Number(v).toLocaleString(undefined, { notation: "compact", maximumFractionDigits: 1 }));
+const kv = (pairs) => pairs.map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join("");
+const timeStr = (sec) => new Date(sec * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+// severity class for a metric against its target bands (null leaves it unstyled)
+const sev = (v, okMax, warnMax) => (v == null ? "" : v <= okMax ? "m-ok" : v <= warnMax ? "m-warn" : "m-bad");
+const sevWrap = (text, cls) => (cls ? `<span class="${cls}">${text}</span>` : text);
+const meter = (rows) => rows.map(([label, n, total, cls]) => `<div class="row"><span>${esc(label)}</span><b>${fmt(n, 0)}</b></div>
+  <div class="track" style="margin-bottom:12px"><div class="fill ${cls}" style="width:${total ? Math.max(n ? 1.5 : 0, (100 * n) / total).toFixed(1) : 0}%"></div></div>`).join("");
+
+// ---- selected time window (seconds), driven by the segmented control ----
+let WINDOW = 60;
+let LAST_HOLDS = [];   // latest hold queue, shared with the quantum panels
+const LAST = { edge: null, dec: null, threat: null };
+const WIN_LABELS = { 60: "last 60 s", 300: "last 5 min", 900: "last 15 min", 3600: "last 1 h" };
+function setWindowLabels() {
+  const label = WIN_LABELS[WINDOW] || `last ${WINDOW} s`;
+  document.querySelectorAll(".win").forEach((el) => { el.textContent = label; });
+}
+
+async function get(path) {
+  try { const r = await fetch(path, { cache: "no-store" }); return r.ok ? await r.json() : null; } catch (e) { return null; }
+}
+
+// Group a series into at most n columns by summing a value function over each group.
+function groups(series, n, val) {
+  if (!series.length) return [];
+  const per = Math.ceil(series.length / n), out = [];
+  for (let i = 0; i < series.length; i += per) {
+    const chunk = series.slice(i, i + per);
+    out.push({ ts: chunk[0].ts, v: chunk.reduce((a, s) => a + val(s), 0) });
+  }
+  return out;
+}
+
+// ---------------- payment funnel ----------------
+const FUNNEL = { cols: [], active: null, hover: null };
+function funnelData(edge, dec) {
+  const t = (edge && edge.totals) || { passed: 0, throttled: 0, blocked: 0 };
+  const c = (dec && dec.counts) || { ALLOW: 0, VERIFY: 0, HOLD: 0 };
+  return [["Reached the edge", t.passed + t.throttled + t.blocked], ["Passed the edge", t.passed],
+    ["Decided", (dec && dec.total) || 0], ["Not held", c.ALLOW + c.VERIFY], ["Allowed", c.ALLOW]];
+}
+function niceMax(v) {
+  if (v <= 0) return 10;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p;
+  return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+}
+function drawFunnel() {
+  const cols = FUNNEL.cols;
+  const svg = $("funnel-svg"), box = $("funnel");
+  const W = Math.max(320, box.clientWidth), H = 200, AX = 34, base = H - 2, top = 10;
+  const colW = (W - AX) / cols.length;
+  const max = niceMax(Math.max(1, ...cols.map((c) => c[1])));
+  const Y = (v) => base - (v / max) * (base - top);
+  // default highlight: the step with the biggest drop-off, else the decided column
+  let def = 2, worst = -1;
+  for (let i = 1; i < cols.length; i++) {
+    const prev = cols[i - 1][1], drop = prev ? 1 - cols[i][1] / prev : 0;
+    if (drop > worst + 1e-9) { worst = drop; def = i; }
+  }
+  const act = FUNNEL.hover != null ? FUNNEL.hover : def;
+  FUNNEL.active = act;
+  let s = `<defs>
+    <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#dfe8ff"/><line x1="0" y1="0" x2="0" y2="7" stroke="#3d6cf6" stroke-width="2.2"/></pattern>
+    <linearGradient id="solid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d6cf6"/><stop offset="1" stop-color="#1f4fe0"/></linearGradient>
+    <linearGradient id="flow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfdcff" stop-opacity=".9"/><stop offset="1" stop-color="#eef3ff" stop-opacity=".5"/></linearGradient>
+    <linearGradient id="colhl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9efff" stop-opacity="0"/><stop offset="1" stop-color="#e9efff"/></linearGradient></defs>`;
+  for (let k = 0; k <= 4; k++) {
+    const v = (max * k) / 4, y = Y(v);
+    s += `<line x1="${AX}" x2="${W}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#eef0f4" stroke-width="1"/>`;
+    if (k) s += `<text x="0" y="${(y + 4).toFixed(1)}" fill="#8b90a0" font-size="10.5">${esc(compact(v))}</text>`;
+  }
+  s += `<rect x="${(AX + act * colW).toFixed(1)}" y="0" width="${colW.toFixed(1)}" height="${H}" fill="url(#colhl)"/>`;
+  cols.forEach(([, v], i) => {
+    const x0 = AX + i * colW, bw = colW * 0.66, y = Y(v);
+    if (i < cols.length - 1) {
+      const nx = AX + (i + 1) * colW, ny = Y(cols[i + 1][1]);
+      s += `<path d="M${(x0 + bw).toFixed(1)} ${y.toFixed(1)} C ${(x0 + bw + (nx - x0 - bw) * 0.5).toFixed(1)} ${y.toFixed(1)}, ${(x0 + bw + (nx - x0 - bw) * 0.5).toFixed(1)} ${ny.toFixed(1)}, ${nx.toFixed(1)} ${ny.toFixed(1)} L ${nx.toFixed(1)} ${base} L ${(x0 + bw).toFixed(1)} ${base} Z" fill="url(#flow)"/>`;
+    }
+    const h = Math.max(0, base - y);
+    s += `<rect x="${x0.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${i === act ? "url(#solid)" : "url(#hatch)"}"/>`;
+    if (h > 0) s += `<rect x="${(x0 + bw / 2 - 11).toFixed(1)}" y="${(y - 3).toFixed(1)}" width="22" height="6" rx="3" fill="${i === act ? "#fff" : "#b9cbff"}" stroke="#3d6cf6" stroke-opacity=".35"/>`;
+  });
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("preserveAspectRatio", "none");
+  svg.innerHTML = s;
+  // update the column labels in place so keyboard focus survives the once-a-second refresh
+  const head = $("funnel-cols");
+  if (head.children.length !== cols.length + 1) {
+    head.innerHTML = `<div></div>` + cols.map((_, i) => `<div class="fc" tabindex="0" data-i="${i}"><span></span><b></b></div>`).join("");
+  }
+  cols.forEach(([label, v], i) => {
+    const fc = head.children[i + 1];
+    fc.classList.toggle("on", i === act);
+    fc.firstChild.textContent = label;
+    fc.lastChild.textContent = compact(v);
+  });
+  const tip = $("funnel-tip");
+  const [, v] = cols[act], prev = act ? cols[act - 1][1] : null;
+  if (cols.some((c) => c[1] > 0)) {
+    const conv = prev ? v / prev : null;
+    tip.innerHTML = `<b>${esc(compact(v))}</b> ${act >= 2 ? "payments" : "requests"}` + (conv == null ? "" : ` · Conversion: <b>${fmt(100 * conv, 0)}%</b> · Drop-off: <b>${conv >= 1 ? "0" : "-" + fmt(100 * (1 - conv), 0)}%</b>`);
+    tip.hidden = false;
+    // centred over the bar, but kept inside the card on narrow screens
+    const half = tip.offsetWidth / 2, cx = ((AX + act * colW + colW * 0.33) / W) * box.clientWidth;
+    tip.style.left = `${Math.min(Math.max(cx, half), box.clientWidth - half)}px`;
+    tip.style.top = `${$("funnel-cols").offsetHeight + Y(v) - 10}px`;
+  } else tip.hidden = true;
+}
+function bindFunnel() {
+  const box = $("funnel");
+  const pick = (clientX) => {
+    const r = box.getBoundingClientRect(), colW = (r.width - 34) / FUNNEL.cols.length;
+    const i = Math.floor((clientX - r.left - 34) / colW);
+    return i >= 0 && i < FUNNEL.cols.length ? i : null;
+  };
+  box.addEventListener("mousemove", (e) => { const i = pick(e.clientX); if (i !== FUNNEL.hover) { FUNNEL.hover = i; drawFunnel(); } });
+  box.addEventListener("mouseleave", () => { FUNNEL.hover = null; drawFunnel(); });
+  $("funnel-cols").addEventListener("focusin", (e) => { const el = e.target.closest("[data-i]"); if (el && FUNNEL.hover !== +el.dataset.i) { FUNNEL.hover = +el.dataset.i; drawFunnel(); } });
+  $("funnel-cols").addEventListener("focusout", (e) => { if (!$("funnel-cols").contains(e.relatedTarget)) { FUNNEL.hover = null; drawFunnel(); } });
+}
+
+// ---------------- traffic: stepped line with a vertical hatch ----------------
+function drawTraffic() {
+  const d = LAST.edge;
+  const el = $("traffic-step");
+  const series = d ? groups(d.series, 26, (s) => s.passed + s.throttled + s.blocked) : [];
+  if (!series.length) { el.innerHTML = `<p class="note">No edge traffic in this window.</p>`; $("traffic-axis").innerHTML = ""; return; }
+  const W = Math.max(200, el.clientWidth), H = 210, top = 34, base = H - 4;
+  const max = Math.max(1, ...series.map((s) => s.v));
+  const step = W / series.length;
+  const Y = (v) => base - (v / max) * (base - top) * 0.92;
+  let path = "", hatch = "", peak = 0;
+  series.forEach((s, i) => {
+    const x0 = i * step, x1 = x0 + step, y = Y(s.v);
+    path += (i ? ` L ${x0.toFixed(1)} ${y.toFixed(1)}` : `M 0 ${y.toFixed(1)}`) + ` L ${x1.toFixed(1)} ${y.toFixed(1)}`;
+    for (let x = x0 + 2; x < x1; x += 4) hatch += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${(y + 3).toFixed(1)}" y2="${base}"/>`;
+    if (s.v > series[peak].v) peak = i;
+  });
+  const px = peak * step + step / 2, py = Y(series[peak].v);
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Requests at the edge per time bin">
+    <g stroke="#f4b8cf" stroke-width="1">${hatch}</g>
+    <path d="${path}" fill="none" stroke="#e8488a" stroke-width="2.2" stroke-linejoin="round"/>
+    <line x1="${px}" x2="${px}" y1="${py}" y2="${base}" stroke="#e8488a" stroke-width="1" stroke-dasharray="2 3"/>
+    <circle cx="${px}" cy="${py}" r="4" fill="#fff" stroke="#e8488a" stroke-width="2"/>
+    <g transform="translate(${Math.min(Math.max(px, 30), W - 30)},${Math.max(py - 24, 12)})"><rect x="-28" y="-11" width="56" height="20" rx="10" fill="#fff" stroke="#ebecf0"/><text text-anchor="middle" y="3" font-size="10.5" font-weight="600" fill="#111318">${esc(compact(series[peak].v))}</text></g>
+  </svg>`;
+  $("traffic-axis").innerHTML = `<span>${timeStr(series[0].ts)}</span><span>peak / bin</span><span>now</span>`;
+}
+
+// ---------------- dot matrices ----------------
+function dots(el, series, color, label) {
+  const COLS = 14, ROWS = 5, gap = 12.5, r = 4.2;
+  const g = groups(series, COLS, (s) => s.v);
+  if (!g.length || !g.some((x) => x.v > 0)) { el.innerHTML = `<span class="note">nothing in this window</span>`; return; }
+  const max = Math.max(...g.map((x) => x.v));
+  let peak = 0;
+  g.forEach((x, i) => { if (x.v > g[peak].v) peak = i; });
+  const W = g.length * gap, H = ROWS * gap;
+  let s = "";
+  g.forEach((x, i) => {
+    const n = x.v > 0 ? Math.max(1, Math.round((x.v / max) * ROWS)) : 0;
+    for (let k = 0; k < ROWS; k++) {
+      const on = k < n, cx = i * gap + gap / 2, cy = H - k * gap - gap / 2;
+      s += `<circle cx="${cx}" cy="${cy}" r="${i === peak && on ? r + 0.6 : r}" fill="${on ? color : "#eef0f4"}" opacity="${on ? (i === peak ? 1 : 0.42) : 0.9}"/>`;
+    }
+  });
+  el.innerHTML = `<span class="peak" style="left:calc(50% - ${(W / 2).toFixed(1)}px + ${(peak * gap + gap / 2).toFixed(1)}px)">${esc(label)}: <b>${timeStr(g[peak].ts).slice(0, 5)}</b></span>
+    <svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(label)} per time bin">${s}</svg>`;
+}
+
+// ---------------- panels ----------------
+async function loadPanel() {
+  const d = await get(`/api/threat?n=${WINDOW}`);
+  if (!d) return;
+  LAST.threat = d;
+  let entries = d.entries || [];
+  const last = entries[entries.length - 1];
+  const level = last ? last.level : "NORMAL";
+  const badge = $("level"); badge.textContent = level; badge.className = "tag lvl-" + level;
+  // Keep the strip readable: collapse to at most ~200 columns, each the worst level in its bin.
+  const RANK = { NORMAL: 0, SURGE: 1, COORDINATED: 2 }, NAME = ["NORMAL", "SURGE", "COORDINATED"];
+  if (entries.length > 200) {
+    const binw = Math.ceil(entries.length / 200), binned = [];
+    for (let i = 0; i < entries.length; i += binw) {
+      const chunk = entries.slice(i, i + binw);
+      const worst = chunk.reduce((a, e) => Math.max(a, RANK[e.level] || 0), 0);
+      binned.push({ ts: chunk[0].ts, level: NAME[worst], n_clusters: chunk[chunk.length - 1].n_clusters });
+    }
+    entries = binned;
+  }
+  const color = { NORMAL: "#1fa463", SURGE: "#e59a1a", COORDINATED: "#e0453f" };
+  const w = 600, h = 30, bw = w / Math.max(entries.length, 1);
+  const rects = entries.map((e, i) => `<rect x="${(i * bw).toFixed(1)}" y="0" width="${Math.max(bw - 0.4, 0.4).toFixed(1)}" height="${h}" fill="${color[e.level] || color.NORMAL}" opacity="${e.level === "NORMAL" ? 0.55 : 0.95}"><title>${new Date(e.ts * 1000).toLocaleTimeString()} ${e.level}, ${e.n_clusters} cluster(s)</title></rect>`).join("");
+  $("load-chart").innerHTML = entries.length ? `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="load level timeline">${rects}</svg>` : `<p class="note">No threat entries yet (Sentinel writes one per second).</p>`;
+  $("load-axis").innerHTML = entries.length ? `<span>${timeStr(entries[0].ts)}</span><span>now</span>` : "";
+  const cl = last ? last.clusters : [];
+  $("clusters").innerHTML = cl.length ? "Active clusters: " + cl.map((c) => `<span class="mono">${esc(c.id)}</span> ${esc(c.key_type)} → <b>${esc(c.action)}</b> (share ${fmt(100 * (c.share || 0))}%, risk ${fmt(c.risk, 2)})`).join(",&nbsp; ") : "No active clusters.";
+  sentinelLine();
+}
+
+// one plain sentence for the funnel card, from the newest Sentinel reading and the biggest drop in the funnel
+function sentinelLine() {
+  const d = LAST.threat;
+  const last = d && d.entries && d.entries[d.entries.length - 1];
+  if (!last) { $("sentinel-line").textContent = "No Sentinel reading yet (it writes one per second)."; return; }
+  const cls = { NORMAL: "blue", SURGE: "", COORDINATED: "red" }[last.level] || "";
+  let s = `Load is <span class="hl ${cls}">${esc(last.level)}</span>`;
+  const cl = last.clusters || [];
+  s += cl.length ? ` with ${last.n_clusters} active cluster${last.n_clusters === 1 ? "" : "s"}: ` + cl.slice(0, 2).map((c) => `<b>${esc(c.id)}</b> (${esc(c.key_type)}, ${esc(c.action)}, ${fmt(100 * (c.share || 0), 0)}% of traffic)`).join(", ") + "." : " and no coordinated cluster is active.";
+  const cols = FUNNEL.cols, i = FUNNEL.active;
+  if (cols.length && i > 0 && cols[i - 1][1] > 0 && cols[i][1] < cols[i - 1][1]) {
+    s += ` Biggest drop: <span class="hl">${esc(cols[i - 1][0].toLowerCase())} → ${esc(cols[i][0].toLowerCase())}</span>, ${fmt(100 * (1 - cols[i][1] / cols[i - 1][1]), 0)}%.`;
+  }
+  $("sentinel-line").innerHTML = s;
+}
+
+const SYSTEM_NAMES = { bank_only: "Bank alone", bank_realistic: "Realistic bank", shield: "Bank + Shield",
+  standalone: "Standalone", submitted_design: "Downgrade baseline" };
+
+async function metaBadge() {
+  const d = await get("/api/meta");
+  const name = d && d.system ? (SYSTEM_NAMES[d.system] || d.system) : "not set";
+  $("system").textContent = name;
+  $("sys-line").textContent = d && d.system ? `Running: ${name}` : "System not set";
+}
+
+async function perimeterPanel() {
+  const d = await get("/api/perimeter");
+  if (!d || !d.reachable) {
+    $("perimeter").innerHTML = "";
+    $("perimeter-note").textContent = "No perimeter running: traffic enters at the edge.";
+    return;
+  }
+  const s = d.stopped || {};
+  const count = (layer) => Object.values(s[layer] || {}).reduce((a, b) => a + b, 0);
+  $("perimeter").innerHTML = kv([["received", fmt(d.received, 0)], ["passed on", fmt(d.passed, 0)],
+    ["stopped", fmt(count("cdn") + count("waf") + count("gateway"), 0)],
+    ["passed share", d.received ? fmt((100 * d.passed) / d.received) + "%" : "-"]]);
+  const reasons = Object.entries(s).flatMap(([layer, r]) => Object.entries(r).map(([why, n]) => `${layer}: ${why} ${fmt(n, 0)}`));
+  $("perimeter-note").textContent = (reasons.length ? reasons.join(", ") + ". " : "")
+    + "It can't link identities, so bots that each stay under the per-IP rate pass on to the edge.";
+}
+
+async function edgePanel() {
+  const d = await get(`/api/edge?seconds=${WINDOW}`);
+  if (!d) return;
+  LAST.edge = d;
+  const t = d.totals;
+  const all = t.passed + t.throttled + t.blocked;
+  $("edge-totals").innerHTML = kv([["passed", fmt(t.passed, 0)], ["throttled", fmt(t.throttled, 0)], ["blocked", fmt(t.blocked, 0)], ["shed share", all ? fmt((100 * (t.throttled + t.blocked)) / all) + "%" : "-"]]);
+  $("edge-meter").innerHTML = meter([["Passed", t.passed, all, "g"], ["Throttled (429)", t.throttled, all, "a"], ["Blocked (403)", t.blocked, all, "p"]]);
+  $("edge-passed").textContent = compact(t.passed);
+  $("edge-shed").textContent = (t.throttled + t.blocked ? "+" : "") + fmt(t.throttled + t.blocked, 0);
+  dots($("edge-dots"), d.series.map((s) => ({ ts: s.ts, v: s.passed })), "#1fa463", "Peak");
+  drawTraffic();
+  FUNNEL.cols = funnelData(LAST.edge, LAST.dec); drawFunnel();
+}
+
+async function decisionsPanel() {
+  const d = await get(`/api/decisions?seconds=${WINDOW}`);
+  if (!d) return;
+  LAST.dec = d;
+  const c = d.counts;
+  $("dec-total").textContent = compact(d.total);
+  const hr = $("dec-hold-rate");
+  hr.textContent = `hold ${fmt(d.hold_rate_60s_pct, 2)}% · cap ${fmt(d.hold_cap_pct)}%`;
+  hr.className = "delta " + (d.hold_alert ? "alert" : "");
+  hr.title = d.hold_alert ? "Hold rate over the last 60 s is above the cap" : "Hold rate over the last 60 s, within the cap";
+  $("dec-meter").innerHTML = meter([["Allow", c.ALLOW, d.total, "g"], ["Verify (step-up)", c.VERIFY, d.total, "b"], ["Hold", c.HOLD, d.total, "p"], ["Stand-in rules", d.stand_in, d.total, "a"]]);
+  $("dec-paths").textContent = "Paths: " + (Object.entries(d.paths).map(([k, v]) => `${k} ${fmt(v, 0)}`).join(", ") || "none yet") + `. Deadline misses: ${fmt(d.deadline_miss, 0)}.`;
+  $("held-count").textContent = compact(c.HOLD);
+  $("held-standin").textContent = fmt(d.stand_in, 0);
+  dots($("held-dots"), (d.series || []).map((s) => ({ ts: s.ts, v: s.HOLD || 0 })), "#2f62f5", "Highest");
+  const l = d.latency_ms;
+  // p99 vs the 50 ms client target / 100 ms deadline; any deadline miss is amber, none is green
+  $("latency").innerHTML = kv([["p50", fmt(l.p50) + " ms"],
+    ["p95", sevWrap(fmt(l.p95) + " ms", sev(l.p95, 50, 100))],
+    ["p99", sevWrap(fmt(l.p99) + " ms", sev(l.p99, 50, 100))],
+    ["deadline misses", sevWrap(fmt(d.deadline_miss, 0), d.deadline_miss == null ? "" : d.deadline_miss === 0 ? "m-ok" : "m-warn")]]);
+  FUNNEL.cols = funnelData(LAST.edge, LAST.dec); drawFunnel();
+}
+
+async function bankPanel() {
+  const d = await get("/api/bank");
+  if (!d) return;
+  const b = d.books || {};
+  $("bank").innerHTML = kv([["posted", fmt(b.posted_count, 0)], ["posted value", compact(b.posted_value)], ["timeout fallback", fmt(b.fail_open_count, 0)], ["engine p99", fmt(d.engine_p99_ms) + " ms"]]);
+  $("bank-note").textContent = d.reachable ? `Recent bank timeouts: ${d.recent_timeouts}; recent postings by the timeout fallback: ${d.recent_fail_open}.` : "Bank not reachable on its books endpoint.";
+}
+
+// Reason strings become chips; cluster and stand-in chips are tinted. The case note is the plain-language line.
+function reasonChips(reasons, standIn) {
+  const chips = (reasons || []).slice(0, 6).map((r) => {
+    const cls = /^cluster /i.test(r) ? " c-cluster" : /stand-in/i.test(r) ? " c-standin" : "";
+    return `<span class="chip${cls}">${esc(r)}</span>`;
+  });
+  if (standIn && !(reasons || []).some((r) => /stand-in/i.test(r))) chips.unshift(`<span class="chip c-standin">stand-in</span>`);
+  return chips.length ? `<div class="chips">${chips.join("")}</div>` : "";
+}
+
+async function holdsPanel() {
+  const d = await get("/api/holds?n=50");
+  if (!d) return;
+  LAST_HOLDS = d.holds || [];
+  if (d.challenger_label) $("challenger-label").textContent = d.challenger_label;
+  const rows = LAST_HOLDS.map((x) => {
+    const ch = x.challenger ? (x.challenger.status === "ok" ? `<span class="score-pill q">${fmt(x.challenger.score, 3)}</span><div class="cell-note">${esc(x.challenger.model || "")}</div>` : `<span class="muted">${esc(x.challenger.status)}</span>`) : `<span class="muted">-</span>`;
+    return `<tr><td><span class="mono">${esc(x.txn_id)}</span><div class="cell-note">${esc(x.from_acct)} → ${esc(x.to_acct)}</div></td>
+      <td class="num">${fmt(x.amount, 2)} ${esc(x.currency)}</td>
+      <td class="num">${x.stand_in ? '<span class="muted">stand-in</span>' : `<span class="score-pill">${fmt(x.score, 3)}</span>`}</td>
+      <td class="num">${ch}</td>
+      <td>${reasonChips(x.reasons, x.stand_in)}<div class="cell-note">${esc(x.note)}</div></td></tr>`;
+  });
+  $("holds").innerHTML = rows.length ? rows.join("") : `<tr><td colspan="5" class="muted">No held payments yet.</td></tr>`;
+}
+
+async function ledgerPanel() {
+  const d = await get("/api/ledger");
+  if (!d) return;
+  $("ledger").innerHTML = kv([["records", fmt(d.records, 0)], ["head", `<span class="mono">${esc((d.head || "-").slice(0, 12))}…</span>`]]);
+}
+
+async function shieldPanel() {
+  const d = await get("/api/shield");
+  if (!d) return;
+  $("shield").innerHTML = kv([["compared", fmt(d.pairs, 0)], ["agreement", d.agreement == null ? "-" : fmt(100 * d.agreement) + "%"], ["shadow would hold", fmt(d.shadow_would_hold, 0)], ["shadow would release", fmt(d.shadow_would_release, 0)]]);
+}
+
+// ---------------- quantum: insight card + results section ----------------
+const SLIDES = { list: [], i: 0, key: "", timer: null, MS: 6000 };
+function showSlide(i) {
+  const L = SLIDES.list;
+  if (!L.length) return;
+  SLIDES.i = ((i % L.length) + L.length) % L.length;
+  const s = L[SLIDES.i];
+  $("insight-slide").outerHTML = `<div class="slide" id="insight-slide"><div class="ins-big">${esc(s.big)}</div><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>`;
+  $("insight-bars").innerHTML = L.map((_, k) => `<button type="button" role="tab" aria-label="Insight ${k + 1}" aria-selected="${k === SLIDES.i}" class="${k < SLIDES.i ? "done" : k === SLIDES.i ? "run" : ""}" data-k="${k}"><i></i></button>`).join("");
+  clearTimeout(SLIDES.timer);
+  SLIDES.timer = setTimeout(() => showSlide(SLIDES.i + 1), SLIDES.MS);
+}
+let QSUM = null;
+async function quantumPanel() {
+  const d = await get("/api/quantum/summary");
+  QSUM = d && !d.empty ? d : null;
+  const list = window.RFQuantum.slides(QSUM, LAST_HOLDS);
+  const key = JSON.stringify(list);
+  if (key !== SLIDES.key) {
+    const first = !SLIDES.list.length;
+    SLIDES.list = list; SLIDES.key = key;
+    if (first) showSlide(0);
+    else if (SLIDES.i < list.length) { const s = list[SLIDES.i]; const el = $("insight-slide"); el.querySelector(".ins-big").textContent = s.big; el.querySelector("h3").textContent = s.title; el.querySelector("p").textContent = s.text; }
+    else showSlide(0);
+  }
+  window.RFQuantum.renderResults($("quantum-results"), QSUM, LAST_HOLDS);
+}
+$("insight-bars").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) showSlide(+b.dataset.k); });
+
+$("verify-btn").addEventListener("click", async () => {
+  $("verify-result").textContent = "checking…";
+  try {
+    const r = await fetch("/api/ledger/verify", { method: "POST" });
+    const d = await r.json();
+    $("verify-result").innerHTML = d.ok ? `<span class="pass">Valid: ${fmt(d.records, 0)} records</span>` : `<span class="fail">Broken at seq ${esc(d.bad_seq)}: ${esc(d.reason)}</span>`;
+  } catch (e) { $("verify-result").textContent = "verify failed to run"; }
+});
+
+// Window selector: switch the window, repaint the windowed panels at once.
+$("window-seg").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-win]");
+  if (!btn) return;
+  WINDOW = parseInt(btn.dataset.win, 10) || 60;
+  $("window-seg").querySelectorAll("button").forEach((b) => b.classList.toggle("is-active", b === btn));
+  setWindowLabels();
+  loadPanel(); edgePanel(); decisionsPanel();
+});
+
+// Nav pill follows the section in view.
+(function navSpy() {
+  const links = [...document.querySelectorAll("#nav a[href^='#']")];
+  const secs = links.map((a) => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  if (!("IntersectionObserver" in window) || !secs.length) return;
+  const io = new IntersectionObserver((ents) => {
+    ents.forEach((en) => {
+      if (en.isIntersecting) links.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === "#" + en.target.id));
+    });
+  }, { rootMargin: "-30% 0px -60% 0px" });
+  secs.forEach((s) => io.observe(s));
+})();
+
+let resizeT = null;
+window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => { drawFunnel(); drawTraffic(); }, 120); });
+
+function tick() { loadPanel(); perimeterPanel(); edgePanel(); decisionsPanel(); bankPanel(); ledgerPanel(); }
+setWindowLabels();
+FUNNEL.cols = funnelData(null, null);
+bindFunnel(); drawFunnel();
+tick(); holdsPanel().then(quantumPanel); shieldPanel(); metaBadge();
+setInterval(metaBadge, 5000);
+setInterval(tick, 1000);
+setInterval(holdsPanel, 2000);
+setInterval(shieldPanel, 5000);
+setInterval(quantumPanel, 3000);
+</script>
+</body>
+</html>
