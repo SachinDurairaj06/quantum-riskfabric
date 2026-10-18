@@ -28,6 +28,7 @@ python -m quantum.research.evaluate seal
 python -m quantum.research.evaluate test                     # Q-07: refuses if PROTOCOL.md is not committed or sealed
 python -m quantum.research.evaluate bench                    # on the VM: worker latency (needs the models `test` wrote)
 python -m quantum.research.evaluate test                     # again, so the gate reads the measured latency
+python -m quantum.research.evaluate control                  # gate calibration self-test (optional, see below)
 RF_QML_MODE=shadow python -m quantum.worker                  # Q-09: started by D's deploy/start.sh
 ```
 
@@ -43,6 +44,14 @@ RF_QML_MODE=shadow python -m quantum.worker                  # Q-09: started by 
 - **Q-03 toy run:** QK-1 and K1 both reach 1.000 accuracy on the two-blob problem.
 - **Pipeline:** the whole pipeline (tune, freeze, test, gate, artifacts, worker) runs end to end on synthetic data in `quantum/tests/`. **No real result exists yet.** Real numbers need A's feature export from HI-Small.
 - **Not checked yet:** whether `pip install qiskit` works on the VM is D's pre-flight question. The worker doesn't need Qiskit: its live backend is `numpy-statevector`.
+
+## Gate calibration self-test (`control`)
+`python -m quantum.research.evaluate control` generates a small synthetic dataset whose labels are drawn from the
+8-qubit feature map itself, then runs the *same* tune/freeze/seal/test gate on it, writing
+`quantum/results/control_summary.json` (the console shows it). It is a calibration check: it confirms the gate runs end
+to end and its negative-control and sanity checks behave. It is deliberately **not** tuned to force a PASS — even on
+feature-map labels, a 2-local quantum edge is classically learnable, so an honest gate need not light up. This is the
+same reason a real "no advantage" verdict on the bank data is a sound result, not a failure.
 
 ## Tests
 `python -m pytest quantum`. This needs `pytest` and `fakeredis` (test only).

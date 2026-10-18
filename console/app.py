@@ -388,4 +388,12 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
             return JSONResponse({"empty": True, "hint": "No quantum results yet"}, status_code=404)
         return data
 
+    @app.get("/api/quantum/control")
+    async def quantum_control():
+        """The gate calibration self-test (python -m quantum.research.evaluate control), if it was run."""
+        data = _read_json(os.path.join(repo_dir, "quantum", "results", "control_summary.json"))
+        if data is None:
+            return JSONResponse({"empty": True}, status_code=404)
+        return data
+
     return app

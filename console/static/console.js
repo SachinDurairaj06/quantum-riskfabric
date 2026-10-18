@@ -358,6 +358,8 @@ async function quantumPanel() {
     else showSlide(0);
   }
   window.RFQuantum.renderResults($("quantum-results"), QSUM, LAST_HOLDS);
+  const ctrl = await get("/api/quantum/control");
+  window.RFQuantum.renderControl($("quantum-control"), ctrl);
 }
 $("insight-bars").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) showSlide(+b.dataset.k); });
 

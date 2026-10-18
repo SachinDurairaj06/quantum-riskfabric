@@ -47,3 +47,6 @@ CLAUDE.md
 
 # generated model report (real numbers come from the VM; never commit synthetic ones)
 scoring/report.json
+
+# generated quantum run output (summaries are regenerated on the VM and shown by the console)
+quantum/results/

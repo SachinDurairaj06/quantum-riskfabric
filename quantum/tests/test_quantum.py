@@ -222,3 +222,17 @@ def test_seal_stands_in_for_the_commit_without_git(tmp_path, qdirs):
         fh.write("\nedited\n")
     assert evaluate.protocol_commit() == "UNCOMMITTED"
     assert evaluate.main(["freeze"]) == 0 and not os.path.exists(evaluate._seal_path())
+
+
+def test_control_data_has_feature_map_structure(tmp_path):
+    import pandas as pd
+
+    from quantum.research import evaluate
+    cand, cap = evaluate.control_data(str(tmp_path), rows=3000, seed=7)
+    df = pd.read_csv(cand)
+    assert {"txn_id", "ts", "day", "split", "label", "score", "from_acct"} <= set(df.columns)
+    assert len([c for c in df.columns if c.startswith("f_")]) == evaluate.circuit.N_QUBITS
+    assert set(df["label"].unique()) <= {0, 1} and 0.04 < df["label"].mean() < 0.16   # a minority of positives
+    assert set(df["split"]) == {"val", "test"}
+    capdf = pd.read_csv(cap)
+    assert {"day", "transactions", "capacity", "positives"} <= set(capdf.columns) and capdf["positives"].sum() > 0

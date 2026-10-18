@@ -214,5 +214,26 @@
     return out;
   }
 
-  window.RFQuantum = { renderResults, slides, digest };
+  // The gate calibration self-test (control_summary.json). Honest framing: it shows the gate machinery runs and its
+  // negative-control/sanity checks behave; it is not tuned to manufacture a PASS.
+  function renderControl(el, C) {
+    if (!el) return;
+    if (!C || C.empty || !C.verdict) { el.innerHTML = ""; return; }
+    const D = digest(C);
+    const sane = D.gate.sanity_ok;
+    const items = [
+      [sane, "Negative control behaves", `N1 (shuffled labels) ${D.n1.map((x) => pct(x)).join(" · ")} vs random ${pct(D.rand)}`],
+      [D.gate.protocol_committed, "Protocol sealed before testing", D.commit ? esc(D.commit) : "-"],
+      [true, "Gate ran end to end", `verdict computed: ${esc(C.verdict)}`],
+    ];
+    el.innerHTML = `<section class="card s-12" aria-label="Gate calibration self-test">
+      <div class="card-h"><h2>Gate calibration self-test <small>labels drawn from the 8-qubit feature map — not bank data, not a fraud result</small></h2>
+        <span class="tag ${sane ? "ok" : "bad"}">${sane ? "machinery sound" : "check failed"}</span></div>
+      <div class="checks" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        ${items.map(([ok, t, v]) => `<div class="check ${ok ? "ok" : "no"}"><span class="ico" aria-hidden="true">${ok ? "✓" : "✕"}</span><div><b>${esc(t)}</b><span>${esc(v)}</span></div></div>`).join("")}
+      </div>
+      <p class="note">${esc(C.label || "")}</p></section>`;
+  }
+
+  window.RFQuantum = { renderResults, renderControl, slides, digest };
 })();
