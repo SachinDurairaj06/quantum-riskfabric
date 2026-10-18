@@ -7,70 +7,93 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header>
-  <h1>Quantum RiskFabric · Console</h1>
-  <div>System: <span id="system" class="badge sys">not set</span>
-    Load level: <span id="level" class="badge lvl-NORMAL">NORMAL</span>
-    <nav style="display:inline"><a href="/scoreboard">Scoreboard</a></nav></div>
-</header>
+<div class="bar" role="banner">
+  <div class="brand"><span class="dot" title="live"></span><b>RiskFabric</b><span class="brand-sub">/ console</span></div>
+  <div class="seg" id="window-seg" role="group" aria-label="Time window">
+    <button type="button" data-win="60" class="is-active">60s</button>
+    <button type="button" data-win="300">5m</button>
+    <button type="button" data-win="900">15m</button>
+    <button type="button" data-win="3600">1h</button>
+  </div>
+  <div class="bar-status">
+    <span class="meta">System</span><span id="system" class="badge sys">not set</span>
+    <span class="meta">Load</span><span id="level" class="badge lvl-NORMAL">NORMAL</span>
+    <a class="sb-link" href="/scoreboard">Scoreboard →</a>
+  </div>
+</div>
+
 <main>
   <div class="grid">
     <section class="panel wide" aria-labelledby="h-load">
-      <h2 id="h-load">Load level timeline (Sentinel, one entry a second)</h2>
-      <div id="load-chart"></div>
+      <h2 id="h-load">Load level timeline <span class="win">last 60&nbsp;s</span><span class="hint">Sentinel, one reading a second</span></h2>
+      <div id="load-chart" class="chart"></div>
       <div class="legend"><span><i style="background:var(--normal)"></i>NORMAL</span><span><i style="background:var(--surge)"></i>SURGE</span><span><i style="background:var(--coord)"></i>COORDINATED</span></div>
       <div id="clusters" class="muted" style="margin-top:8px"></div>
     </section>
 
     <!-- In request-path order: perimeter, edge, decisions, latency, then the bank and the ledger. -->
     <section class="panel" aria-labelledby="h-perim">
-      <h2 id="h-perim">Perimeter (CDN, WAF, API gateway stand-in)</h2>
+      <h2 id="h-perim">Perimeter <span class="hint">CDN / WAF / gateway</span></h2>
       <div id="perimeter" class="kv"></div>
       <p id="perimeter-note" class="muted" style="margin-top:8px"></p>
     </section>
 
     <section class="panel" aria-labelledby="h-edge">
-      <h2 id="h-edge">Edge: passed against shed (last 60 s)</h2>
-      <div id="edge-chart"></div>
+      <h2 id="h-edge">Edge: passed vs shed <span class="win">last 60&nbsp;s</span></h2>
+      <div id="edge-chart" class="chart"></div>
       <div class="legend"><span><i style="background:var(--bar1)"></i>passed</span><span><i style="background:var(--bar2)"></i>throttled (429)</span><span><i style="background:var(--bar3)"></i>blocked (403)</span></div>
-      <div id="edge-totals" class="kv" style="margin-top:8px"></div>
+      <div id="edge-totals" class="kv" style="margin-top:10px"></div>
     </section>
 
     <section class="panel" aria-labelledby="h-dec">
-      <h2 id="h-dec">Decisions</h2>
+      <h2 id="h-dec">Decisions <span class="win">last 60&nbsp;s</span></h2>
+      <div id="dec-chart" class="chart" style="margin-bottom:10px"></div>
+      <div class="legend" style="margin:-4px 0 10px"><span><i style="background:var(--ok)"></i>allow</span><span><i style="background:var(--warn)"></i>verify</span><span><i style="background:var(--bad)"></i>hold</span></div>
       <div id="decisions" class="kv"></div>
       <div id="paths" class="muted" style="margin-top:8px"></div>
       <div id="hold-alert" style="margin-top:6px"></div>
     </section>
 
     <section class="panel" aria-labelledby="h-lat">
-      <h2 id="h-lat">Latency and deadline</h2>
+      <h2 id="h-lat">Latency &amp; deadline <span class="win">last 60&nbsp;s</span></h2>
       <div id="latency" class="kv"></div>
+      <p class="muted" style="margin-top:8px">Payment deadline 100&nbsp;ms; client p99 target ≤ 50&nbsp;ms at the base rate.</p>
     </section>
 
     <section class="panel" aria-labelledby="h-bank">
-      <h2 id="h-bank">Bank books (the bank's own record)</h2>
+      <h2 id="h-bank">Bank books <span class="hint">the bank's own record</span></h2>
       <div id="bank" class="kv"></div>
       <div id="bank-note" class="muted" style="margin-top:6px"></div>
     </section>
 
     <section class="panel" aria-labelledby="h-ledger">
-      <h2 id="h-ledger">Ledger</h2>
+      <h2 id="h-ledger">Ledger <span class="hint">hash-chained, verifiable</span></h2>
       <div id="ledger" class="kv"></div>
-      <p><button id="verify-btn" type="button">Verify the chain</button> <span id="verify-result" aria-live="polite"></span></p>
+      <p style="margin:12px 0 0"><button id="verify-btn" type="button">Verify the chain</button> <span id="verify-result" aria-live="polite"></span></p>
     </section>
 
     <section class="panel wide" aria-labelledby="h-hold">
-      <h2 id="h-hold">Hold queue</h2>
+      <h2 id="h-hold">Hold queue <span class="hint">most urgent first</span></h2>
       <p class="research" id="challenger-label">Quantum challenger (research, simulated 8 qubits); does not affect decisions</p>
       <div class="scroll"><table>
-        <thead><tr><th>Payment</th><th class="num">Amount</th><th class="num">Classical score</th><th class="num">Challenger</th><th>Why held</th></tr></thead>
+        <thead><tr><th>Payment</th><th class="num">Amount</th><th class="num">Classical</th><th class="num">Challenger</th><th>Reason codes &amp; case note</th></tr></thead>
         <tbody id="holds"><tr><td colspan="5" class="muted">No held payments yet.</td></tr></tbody>
       </table></div>
     </section>
 
+    <section class="panel wide" aria-labelledby="h-quantum">
+      <h2 id="h-quantum">Quantum challenger result <span class="hint">research, simulated 8 qubits, shadow only</span></h2>
+      <div class="bezel"><div class="qcard" id="quantum-card">
+        <div class="q-verdict" id="q-verdict">Awaiting the quantum gate</div>
+        <div class="q-big" id="q-big">-</div>
+        <div class="q-sub" id="q-sub">The pre-registered gate has not run yet.</div>
+        <div class="q-grid" id="q-tiles"></div>
+        <div class="q-note" id="q-note"></div>
+      </div></div>
+    </section>
+
     <section class="panel wide" aria-labelledby="h-shield">
-      <h2 id="h-shield">Shield agreement (bank engine against our shadow score)</h2>
+      <h2 id="h-shield">Shield agreement <span class="hint">bank engine vs our shadow score</span></h2>
       <div id="shield" class="kv"></div>
     </section>
   </div>

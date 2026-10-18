@@ -141,7 +141,7 @@ function renderModel() {
   const m = SUMMARY.model;
   if (!m || !m.gfp_gbm) { $("model").innerHTML = `<p class="muted">not run</p>`; return; }
   const row = (n, x) => `<tr><td>${esc(n)}</td><td class="num">${esc(num(3)(x.f1))}</td><td class="num">${esc(num(3)(x.pr_auc))}</td><td class="num">${esc(pct(x.recall_at_1pct))}</td></tr>`;
-  $("model").innerHTML = `<table><thead><tr><th>Model</th><th class="num">F1 (laundering)</th><th class="num">PR-AUC</th><th class="num">Recall at top 1%</th></tr></thead><tbody>${row("gfp-gbm-v1 (ours)", m.gfp_gbm)}${m.raw_gbm ? row("raw-gbm-v1 (baseline, the bank's model)", m.raw_gbm) : ""}</tbody></table><p class="muted">Inference p99 on the VM: ${esc(ms(m.p99_ms) || "–")} · source ${esc(m.source || "")}</p>`;
+  $("model").innerHTML = `<table><thead><tr><th>Model</th><th class="num">F1 (laundering)</th><th class="num">PR-AUC</th><th class="num">Recall at top 1%</th></tr></thead><tbody>${row("gfp-gbm-v1 (ours)", m.gfp_gbm)}${m.raw_gbm ? row("raw-gbm-v1 (baseline, the bank's model)", m.raw_gbm) : ""}</tbody></table><p class="muted">Inference p99 on the VM: ${esc(ms(m.p99_ms) || "-")} · source ${esc(m.source || "")}</p>`;
 }
 
 function renderQuantum() {

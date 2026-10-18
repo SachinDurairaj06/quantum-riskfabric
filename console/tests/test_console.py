@@ -89,6 +89,24 @@ def test_panels_read_streams_and_holds(tmp_path):
         assert b["books"]["posted_count"] == 3 and b["engine_p99_ms"] == 4.0
 
 
+def test_decision_time_windows_and_timeline(tmp_path):
+    client, r = make(tmp_path)
+    now = time.time()
+    # three decisions in the last minute, one five minutes ago
+    for off, action in ((2, "ALLOW"), (3, "HOLD"), (4, "VERIFY"), (300, "ALLOW")):
+        r.xadd("decisions", {"ts": str(now - off), "action": action, "path": "engine",
+                             "stand_in": "0", "deadline_met": "1", "latency_ms": "6.0"})
+    with client as c:
+        d60 = c.get("/api/decisions?seconds=60").json()
+        assert d60["total"] == 3 and d60["counts"]["ALLOW"] == 1 and d60["seconds"] == 60
+        d5m = c.get("/api/decisions?seconds=300").json()
+        assert d5m["total"] == 4 and d5m["counts"]["ALLOW"] == 2
+        assert sum(sum(row.get(k, 0) for k in ("ALLOW", "VERIFY", "HOLD")) for row in d5m["series"]) == 4
+        assert c.get("/api/decisions?seconds=99999").json()["seconds"] == 3600          # clamped to MAX_WINDOW
+        e = c.get("/api/edge?seconds=300").json()
+        assert e["seconds"] == 300 and "series" in e
+
+
 def test_ledger_status_and_verify(tmp_path):
     client, r = make(tmp_path)
     w = LedgerWriter(r, str(tmp_path / "ledger" / "ledger.jsonl"))

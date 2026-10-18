@@ -24,6 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 STATIC = os.path.join(HERE, "static")
 QUANTUM_LABEL = "Quantum challenger (research, simulated 8 qubits); does not affect decisions"
+MAX_WINDOW = 3600  # the longest view window the console offers (1 hour), and how long per-second buckets are kept
 
 
 def _pct(values: list, p: float) -> Optional[float]:
@@ -67,14 +68,35 @@ def _tail_lines(path: str, max_bytes: int) -> list:
     return out
 
 
+def _bucket_series(buckets: dict, start: int, keys: list, cols: int = 90) -> list:
+    """Downsample a {second: [counts...]} store over [start, now] into at most `cols` equal time bins,
+    so a one-hour window draws a readable strip instead of 3,600 bars. `keys` is a list of (name, index) pairs."""
+    hi = int(time.time())
+    width = max(1, math.ceil(max(1, hi - start) / cols))
+    out: dict = {}
+    for sec, b in buckets.items():
+        if sec < start:
+            continue
+        col = (sec - start) // width
+        row = out.setdefault(col, {"ts": start + col * width})
+        for name, i in keys:
+            row[name] = row.get(name, 0) + b[i]
+    return [out[c] for c in sorted(out)]
+
+
 class Aggregator:
     """Reads edge.log, decisions and bank.log once each, incrementally, and keeps what the panels need in memory.
-    Polling the streams for 60 s of history every second would be slow and wrong at 1,000 requests/s."""
+    Polling the streams for a window of history every second would be slow and wrong at 1,000 requests/s.
+    Counts are kept in per-second buckets so any view window up to MAX_WINDOW is a cheap in-memory sum."""
+
+    _ACTION_IDX = {"ALLOW": 0, "VERIFY": 1, "HOLD": 2}
 
     def __init__(self, redis, backfill: int = 5000):
         self.r, self.backfill = redis, backfill
         self.edge: dict = {}                                  # second -> [passed, throttled, blocked]
-        self.decisions = collections.deque(maxlen=5000)       # (ts, action, path, stand_in, deadline_met, latency)
+        self.dec: dict = {}                                   # second -> [allow, verify, hold, stand_in, miss, total]
+        self.dec_paths: dict = {}                             # second -> {path: count}
+        self.dec_lat = collections.deque(maxlen=200000)       # (ts, latency_ms), for percentiles over the window
         self.engine_lat = collections.deque(maxlen=5000)
         self.bank_flags = collections.deque(maxlen=5000)      # (timeout, entry, posted)
         self.ids: dict = {}
@@ -89,8 +111,21 @@ class Aggregator:
         b[1 if status == "429" else 2 if status == "403" else 0] += 1
 
     def _decision(self, f) -> None:
-        self.decisions.append((_f(f.get("ts"), 0.0), f.get("action"), f.get("path", "?"), f.get("stand_in") == "1",
-                               f.get("deadline_met") != "0", _f(f.get("latency_ms"))))
+        ts = _f(f.get("ts"), 0.0)
+        sec = int(ts)
+        b = self.dec.setdefault(sec, [0, 0, 0, 0, 0, 0])
+        idx = self._ACTION_IDX.get(f.get("action"))
+        if idx is not None:
+            b[idx] += 1
+        b[3] += f.get("stand_in") == "1"
+        b[4] += f.get("deadline_met") == "0"
+        b[5] += 1
+        path = f.get("path", "?")
+        p = self.dec_paths.setdefault(sec, {})
+        p[path] = p.get(path, 0) + 1
+        lat = _f(f.get("latency_ms"))
+        if lat is not None:
+            self.dec_lat.append((ts, lat))
 
     def _bank(self, f) -> None:
         if f.get("entry") == "engine":
@@ -113,9 +148,10 @@ class Aggregator:
             for entry_id, f in entries:
                 self.ids[stream] = entry_id
                 fn(f)
-        cutoff = int(time.time()) - 180
-        for sec in [k for k in self.edge if k < cutoff]:
-            del self.edge[sec]
+        cutoff = int(time.time()) - MAX_WINDOW
+        for store in (self.edge, self.dec, self.dec_paths):
+            for sec in [k for k in store if k < cutoff]:
+                del store[sec]
 
     async def run(self) -> None:
         while True:
@@ -172,7 +208,7 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
 
     @app.get("/api/threat")
     async def threat(n: int = 120):
-        entries = await redis.xrevrange("threat", count=max(1, min(n, 600)))
+        entries = await redis.xrevrange("threat", count=max(1, min(n, MAX_WINDOW)))
         out = []
         for _, f in reversed(entries):
             try:
@@ -187,36 +223,49 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
 
     @app.get("/api/edge")
     async def edge(seconds: int = 60):
+        seconds = max(1, min(seconds, MAX_WINDOW))
         start = int(time.time()) - seconds
-        series = [{"ts": sec, "passed": b[0], "throttled": b[1], "blocked": b[2]}
-                  for sec, b in sorted(agg.edge.items()) if sec >= start]
-        totals = {k: sum(x[k] for x in series) for k in ("passed", "throttled", "blocked")}
-        return {"series": series, "totals": totals}
+        totals = {"passed": 0, "throttled": 0, "blocked": 0}
+        for sec, b in agg.edge.items():
+            if sec >= start:
+                totals["passed"] += b[0]
+                totals["throttled"] += b[1]
+                totals["blocked"] += b[2]
+        series = _bucket_series(agg.edge, start, [("passed", 0), ("throttled", 1), ("blocked", 2)])
+        return {"series": series, "totals": totals, "seconds": seconds}
 
     @app.get("/api/decisions")
-    async def decisions():
-        counts = {"ALLOW": 0, "VERIFY": 0, "HOLD": 0}
-        paths: dict = {}
-        latencies, misses, stand_in = [], 0, 0
+    async def decisions(seconds: int = 60):
+        seconds = max(1, min(seconds, MAX_WINDOW))
         now = time.time()
-        recent, recent_holds = 0, 0
-        for ts, action, path, si, met, lat in agg.decisions:
-            if action in counts:
-                counts[action] += 1
-            paths[path] = paths.get(path, 0) + 1
-            stand_in += si
-            misses += not met
-            if lat is not None:
-                latencies.append(lat)
-            if ts >= now - 60:
-                recent += 1
-                recent_holds += action == "HOLD"
+        start = int(now) - seconds
+        counts = {"ALLOW": 0, "VERIFY": 0, "HOLD": 0}
+        stand_in = misses = total = 0
+        for sec, b in agg.dec.items():
+            if sec < start:
+                continue
+            counts["ALLOW"] += b[0]
+            counts["VERIFY"] += b[1]
+            counts["HOLD"] += b[2]
+            stand_in += b[3]
+            misses += b[4]
+            total += b[5]
+        paths: dict = {}
+        for sec, p in agg.dec_paths.items():
+            if sec >= start:
+                for k, v in p.items():
+                    paths[k] = paths.get(k, 0) + v
+        latencies = [lat for ts, lat in agg.dec_lat if ts >= start]
+        # the hold cap is defined over 60 s (CONTRACTS section 7), independent of the chosen view window
+        hstart = int(now) - 60
+        recent_holds = sum(b[2] for sec, b in agg.dec.items() if sec >= hstart)
+        recent = sum(b[5] for sec, b in agg.dec.items() if sec >= hstart)
         cap = _f(await redis.get("cfg:hold_cap_pct"), 2.0)
         hold_rate = (100.0 * recent_holds / recent) if recent else 0.0
-        last = latencies[-1000:]
+        series = _bucket_series(agg.dec, start, [("ALLOW", 0), ("VERIFY", 1), ("HOLD", 2)])
         return {"counts": counts, "paths": paths, "stand_in": stand_in, "deadline_miss": misses,
-                "total": len(agg.decisions), "latency_ms": {"p50": _pct(last, 0.5), "p95": _pct(last, 0.95),
-                                                            "p99": _pct(last, 0.99)},
+                "total": total, "seconds": seconds, "series": series,
+                "latency_ms": {"p50": _pct(latencies, 0.5), "p95": _pct(latencies, 0.95), "p99": _pct(latencies, 0.99)},
                 "hold_rate_60s_pct": round(hold_rate, 3), "hold_cap_pct": cap, "hold_alert": hold_rate > cap}
 
     @app.get("/api/holds")
