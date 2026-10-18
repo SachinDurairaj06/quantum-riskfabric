@@ -30,7 +30,8 @@ from quantum.research.models import MODELS, TUNED, _lr, build, grid
 HERE = os.path.dirname(os.path.abspath(__file__))
 QDIR = os.path.dirname(HERE)
 REPO = os.path.dirname(QDIR)
-RESULTS = os.path.join(QDIR, "results")
+# RF_QUANTUM_RESULTS lets a caller (A's handoff test) redirect tuning.json to a temp dir, so it never writes the repo
+RESULTS = os.environ.get("RF_QUANTUM_RESULTS") or os.path.join(QDIR, "results")
 MODELS_DIR = os.path.join(QDIR, "models")
 PROTOCOL = os.path.join(QDIR, "PROTOCOL.md")
 SEEDS = (1, 2, 3)
