@@ -206,3 +206,19 @@ def test_no_quantum_imports_in_the_payment_path():
                 if name.endswith(".py"):
                     text = open(os.path.join(root, name), encoding="utf-8").read()
                     assert "qiskit" not in text and "import quantum" not in text and "from quantum" not in text, name
+
+
+def test_seal_stands_in_for_the_commit_without_git(tmp_path, qdirs):
+    cand, cap = synthetic(tmp_path)
+    assert evaluate.main(["tune", "--candidates", cand, "--capacity", cap]) == 0
+    assert evaluate.main(["freeze"]) == 0
+    assert evaluate.main(["test", "--candidates", cand, "--capacity", cap]) == 3        # neither committed nor sealed
+    assert evaluate.main(["seal"]) == 0
+    assert evaluate.protocol_commit().startswith("sealed-")
+    assert evaluate.main(["test", "--candidates", cand, "--capacity", cap]) == 0
+    assert json.loads((qdirs / "results" / "summary.json").read_text())["gate"]["protocol_committed"] is True
+    # editing the protocol after sealing breaks the seal, and a new freeze removes it
+    with open(evaluate.PROTOCOL, "a", encoding="utf-8") as fh:
+        fh.write("\nedited\n")
+    assert evaluate.protocol_commit() == "UNCOMMITTED"
+    assert evaluate.main(["freeze"]) == 0 and not os.path.exists(evaluate._seal_path())

@@ -23,8 +23,11 @@ python -m quantum.research.evaluate toy                      # Q-03: QK-1 and K1
 python -m quantum.research.evaluate tune                     # Q-05: needs A's export in $RF_DATA/features/
 python -m quantum.research.evaluate freeze                   # writes PROTOCOL.md; review it, then commit it
 git add quantum/PROTOCOL.md && git commit -m "Q-06: freeze the quantum protocol"
-python -m quantum.research.evaluate test                     # Q-07: refuses if PROTOCOL.md is not committed
-python -m quantum.research.evaluate bench                    # on the VM: worker latency for the gate
+#   no git on the machine (the LinuxONE VM)? seal it instead: records its SHA-256 and the time
+python -m quantum.research.evaluate seal
+python -m quantum.research.evaluate test                     # Q-07: refuses if PROTOCOL.md is not committed or sealed
+python -m quantum.research.evaluate bench                    # on the VM: worker latency (needs the models `test` wrote)
+python -m quantum.research.evaluate test                     # again, so the gate reads the measured latency
 RF_QML_MODE=shadow python -m quantum.worker                  # Q-09: started by D's deploy/start.sh
 ```
 

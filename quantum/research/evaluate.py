@@ -4,6 +4,7 @@
   toy      Q-03 two-blob toy problem: QK-1 and K1 must both separate it
   tune     Q-05 tuning on validation only, 9 configurations per matched model, 3 seeds -> quantum/results/tuning.json
   freeze   Q-06 writes quantum/PROTOCOL.md from tuning.json (review it, then commit it before `test`)
+  seal     on a machine without git: records PROTOCOL.md's SHA-256 and the time, in place of the commit
   test     Q-07 test-split evaluation under the committed protocol -> results, summary.json, GATE.md, models/
   bench    worker latency on this machine -> quantum/results/worker_latency.json (run on the VM)
 """
@@ -64,12 +65,25 @@ def _commit() -> str:
     return _git("rev-parse", "--short", "HEAD") or "uncommitted"
 
 
+def _seal_path() -> str:
+    return os.path.splitext(PROTOCOL)[0] + ".seal.json"
+
+
 def protocol_commit() -> str:
-    """The commit that last changed PROTOCOL.md, or UNCOMMITTED if it has local changes or was never committed."""
+    """The commit that last changed PROTOCOL.md, or UNCOMMITTED if it has local changes or was never committed.
+    Without git (the LinuxONE VM), a seal written by `seal` stands in for the commit: `sealed-<sha256[:12]>`, valid
+    only while PROTOCOL.md still has the sealed hash."""
     rel = os.path.relpath(PROTOCOL, REPO).replace(os.sep, "/")
     last = _git("log", "-1", "--format=%H", "--", rel)
     dirty = _git("status", "--porcelain", "--", rel)
-    return last[:12] if last and not dirty else "UNCOMMITTED"
+    if last and not dirty:
+        return last[:12]
+    if os.path.exists(_seal_path()) and os.path.exists(PROTOCOL):
+        with open(_seal_path(), encoding="utf-8") as fh:
+            seal = json.load(fh)
+        if seal.get("sha256") == _sha256(PROTOCOL):
+            return "sealed-" + seal["sha256"][:12]
+    return "UNCOMMITTED"
 
 
 # ---------------- data ----------------
@@ -235,7 +249,22 @@ def cmd_freeze(_args) -> int:
               "flat_kernel_warning": any(m.get("QK-1", {}).get("kernel_flat") for m in tuning["seeds"].values())}
     with open(PROTOCOL, "w", encoding="utf-8") as fh:
         fh.write(PROTOCOL_HEAD + json.dumps(frozen, indent=1) + "\n```\n\n## Changes\n(none)\n")
+    if os.path.exists(_seal_path()):
+        os.remove(_seal_path())   # a new protocol needs a new seal
     print(f"wrote {PROTOCOL}. Review it, `git add quantum/PROTOCOL.md && git commit`, post the hash, then run `test`.")
+    return 0
+
+
+def cmd_seal(_args) -> int:
+    """For a machine without git: seal PROTOCOL.md before `test` by recording its SHA-256 and the time."""
+    if not os.path.exists(PROTOCOL):
+        print("refused: no quantum/PROTOCOL.md; run `freeze` first", file=sys.stderr)
+        return 3
+    seal = {"sha256": _sha256(PROTOCOL), "sealed_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+            "host": platform.node(), "note": "stands in for the git commit of PROTOCOL.md on a machine without git"}
+    with open(_seal_path(), "w", encoding="utf-8") as fh:
+        json.dump(seal, fh, indent=1)
+    print(f"sealed quantum/PROTOCOL.md (sha256 {seal['sha256'][:12]}) at {seal['sealed_utc']}. Now run `test`.")
     return 0
 
 
@@ -259,7 +288,8 @@ def cmd_test(args) -> int:
     proto = read_protocol()
     pcommit = protocol_commit()
     if pcommit == "UNCOMMITTED" and not args.allow_uncommitted:
-        print("refused: quantum/PROTOCOL.md is not committed (or has local changes). Commit it first.", file=sys.stderr)
+        print("refused: quantum/PROTOCOL.md is not committed or sealed (or changed since). Commit it, or run "
+              "`python -m quantum.research.evaluate seal` on a machine without git.", file=sys.stderr)
         return 3
     data = Data(args.candidates, args.capacity)
     for want, got in zip(proto["inputs"], data.inputs):
@@ -380,10 +410,11 @@ def main(argv=None) -> int:
         if name == "test":
             p.add_argument("--allow-uncommitted", action="store_true", help="dry runs only: the gate will say VOID")
     sub.add_parser("freeze")
+    sub.add_parser("seal")
     b = sub.add_parser("bench")
     b.add_argument("--n", type=int, default=500)
     args = ap.parse_args(argv)
-    return {"checks": cmd_checks, "toy": cmd_toy, "tune": cmd_tune, "freeze": cmd_freeze, "test": cmd_test,
+    return {"checks": cmd_checks, "toy": cmd_toy, "tune": cmd_tune, "freeze": cmd_freeze, "seal": cmd_seal, "test": cmd_test,
             "bench": cmd_bench}[args.cmd](args)
 
 
