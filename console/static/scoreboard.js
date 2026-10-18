@@ -46,6 +46,10 @@ const ROWS = [
 async function get(path) {
   try { const r = await fetch(path, { cache: "no-store" }); return r.ok ? await r.json() : null; } catch (e) { return null; }
 }
+// like get(), but keeps the body of a 404 (the summary route explains what is missing)
+async function getAny(path) {
+  try { const r = await fetch(path, { cache: "no-store" }); return await r.json(); } catch (e) { return null; }
+}
 
 let SUMMARY = null, QUANTUM = null, CURRENT = "S4";
 
@@ -154,14 +158,29 @@ function renderModel() {
     <p class="note">${lift} Precision, recall and F1 at the tuned hold threshold; the rules give a decision, not a ranking, so they have no PR-AUC. ${m.synthetic ? "<b>Synthetic data: checks the pipeline only.</b> " : ""}Inference p99: ${esc(ms(m.p99_ms) || "-")} · source ${esc(m.source || "")}</p>`;
 }
 
+// No scenario runs yet: say what is missing and how to fill the page, and show the model report if it exists.
+function renderSetup(info) {
+  const step = (done, title, cmd, note) => `<li><span><b>${esc(title)}</b>${done ? ' <span class="tag ok">done</span>' : ""}<br><code>${esc(cmd)}</code>${note ? `<br><span class="cell-note">${esc(note)}</span>` : ""}</span></li>`;
+  const haveModel = !!(info.model && info.model.gfp_gbm);
+  $("empty").hidden = false;
+  $("empty").className = "";
+  $("empty").innerHTML = `<div class="bento">
+    <section class="card s-7"><div class="card-h"><h2>No scenario results yet <small>the matrix fills from eval/results/summary.json</small></h2></div>
+      <ol class="steps">
+        ${step(haveModel, "Train the classical model", "python -m scoring train --source hi_small --path $RF_DATA/replay/HI-Small_Trans.csv --max-rows 500000")}
+        ${step(false, "Export the quantum candidates", "python -m scoring export --source hi_small --path $RF_DATA/replay/HI-Small_Trans.csv --max-rows 500000")}
+        ${step(false, "Run the scenario matrix", "eval/scenarios/run_all.sh 200", info.deploy_present === false ? "Needs deploy/start.sh, stop.sh and reset.sh, which are not in this repo yet." : "")}
+        ${step(false, "Rebuild this page's data", "python -m eval.scenarios.summary")}
+      </ol></section>
+    <section class="card s-5"><div class="card-h"><h2>Model quality <small>from scoring/report.json</small></h2></div><div id="model"></div></section></div>`;
+  SUMMARY = { model: info.model };
+  renderModel();
+}
+
 async function main() {
-  [SUMMARY, QUANTUM] = await Promise.all([get("/api/results/summary"), get("/api/quantum/summary")]);
+  [SUMMARY, QUANTUM] = await Promise.all([getAny("/api/results/summary"), get("/api/quantum/summary")]);
   window.RFQuantum.renderResults($("quantum-results"), QUANTUM && !QUANTUM.empty ? QUANTUM : null);
-  if (!SUMMARY || !SUMMARY.matrix) {
-    $("empty").hidden = false;
-    $("empty").textContent = "No results yet: run eval/scenarios/run_all.sh";
-    return;
-  }
+  if (!SUMMARY || !SUMMARY.matrix) { renderSetup(SUMMARY || {}); return; }
   $("content").hidden = false;
   $("host").textContent = `${SUMMARY.host || "?"} · ${SUMMARY.arch || "?"} · AI accelerator: ${SUMMARY.nnpa ? "present" : "not present"} · commit ${SUMMARY.commit || "?"} · generated ${SUMMARY.generated_ts ? new Date(SUMMARY.generated_ts * 1000).toLocaleString() : "?"}`;
   $("footer").innerHTML = `Every number comes from <span class="mono">eval/results/</span>. Rebuild with <span class="mono">python -m eval.scenarios.summary</span>; full tables in <span class="mono">eval/RESULTS.md</span>.`;

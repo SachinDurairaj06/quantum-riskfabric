@@ -373,7 +373,12 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
     async def results_summary():
         data = _read_json(os.path.join(repo_dir, "eval", "results", "summary.json"))
         if data is None:
-            return JSONResponse({"empty": True, "hint": "No results yet: run eval/scenarios/run_all.sh"}, status_code=404)
+            # no scenario runs yet; the model report can still exist on its own (python -m scoring train)
+            model = _read_json(os.path.join(repo_dir, "scoring", "report.json"))
+            return JSONResponse({"empty": True, "hint": "No results yet: run eval/scenarios/run_all.sh",
+                                 "model": dict(model, source="scoring/report.json") if model else None,
+                                 "deploy_present": os.path.exists(os.path.join(repo_dir, "deploy", "start.sh"))},
+                                status_code=404)
         return data
 
     @app.get("/api/quantum/summary")
