@@ -32,8 +32,10 @@ def main(argv=None) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     port = 9000 + int(os.environ.get("RF_PORT_OFFSET", "0"))
+    # ws/loop/http pinned to pure-Python: the services are plain HTTP, and this avoids uvloop/httptools/websockets
+    # version clashes (e.g. the websockets ServerProtocol import error on the conda s390x build).
     uvicorn.run(create_app(data_dir=data_dir), host="127.0.0.1", port=port, log_level="warning",
-                access_log=False)
+                access_log=False, ws="none", loop="asyncio", http="h11")
     return 0
 
 

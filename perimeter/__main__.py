@@ -28,7 +28,8 @@ def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     r = aioredis.Redis.from_url(os.environ.get("RF_VALKEY_URL", "redis://127.0.0.1:6379/0"), decode_responses=True)
     port = 8000 + int(os.environ.get("RF_PORT_OFFSET", "0"))
-    uvicorn.run(create_app(redis=r), host="127.0.0.1", port=port, log_level="warning", access_log=False)
+    uvicorn.run(create_app(redis=r), host="127.0.0.1", port=port, log_level="warning", access_log=False,
+                ws="none", loop="asyncio", http="h11")   # pure-Python protocols: avoids s390x extension version clashes
     return 0
 
 

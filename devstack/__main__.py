@@ -310,7 +310,7 @@ def edge(args) -> int:
     offset = int(os.environ.get("RF_PORT_OFFSET", "0"))
     r = aioredis.Redis.from_url(os.environ.get("RF_VALKEY_URL", "redis://127.0.0.1:6379/0"), decode_responses=True)
     uvicorn.run(create_app(args.mode, redis=r, offset=offset), host="127.0.0.1", port=8080 + offset,
-                log_level="warning", access_log=False)
+                log_level="warning", access_log=False, ws="none", loop="asyncio", http="h11")
     return 0
 
 
