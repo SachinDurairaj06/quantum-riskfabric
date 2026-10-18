@@ -68,11 +68,19 @@ def _pkg_file(name: str) -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
 
 
+def _load(source: str, path: str, max_rows: Optional[int]) -> pd.DataFrame:
+    """Read, optionally keep only the most recent max_rows (time-ordered, so the splits stay contiguous), then split."""
+    df = datamod.read(source, path)
+    if max_rows and len(df) > max_rows:
+        df = df.tail(int(max_rows)).reset_index(drop=True)
+    return datamod.add_split(df)
+
+
 def train(source: str, path: str, model_dir: str, backend=None, hold_cap: float = DEFAULT_HOLD_CAP,
-          policy_path: Optional[str] = None, report_path: Optional[str] = None) -> dict:
+          policy_path: Optional[str] = None, report_path: Optional[str] = None, max_rows: Optional[int] = None) -> dict:
     policy_path = policy_path or _pkg_file("policy.json")
     report_path = report_path or _pkg_file("report.json")
-    df = datamod.add_split(datamod.read(source, path))
+    df = _load(source, path, max_rows)
     for part in ("train", "val", "test"):
         if not (df["split"] == part).any():
             raise ValueError(f"the data has no {part} rows after the time split; need a wider date range")
@@ -156,8 +164,8 @@ def _report(source, df, X, gfp, raw, is_test, y, hold_at) -> dict:
             "gfp_gbm": _metrics(yte, gfp_te, hold_at), "raw_gbm": _metrics(yte, raw_te, hold_at)}
 
 
-def export(source: str, path: str, out_dir: str, model_dir: str) -> dict:
-    df = datamod.add_split(datamod.read(source, path))
+def export(source: str, path: str, out_dir: str, model_dir: str, max_rows: Optional[int] = None) -> dict:
+    df = _load(source, path, max_rows)
     X = build_features(df)
     gfp = Model.load(model_dir, GFP_MODEL)
     scores = gfp.predict(X)

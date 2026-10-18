@@ -23,6 +23,8 @@ def main(argv=None) -> int:
         p.add_argument("--source", required=True, choices=("hi_small", "cards", "replay"))
         p.add_argument("--path", required=True, help="the source file")
         p.add_argument("--model-dir", default=os.path.join(data, "models"))
+        p.add_argument("--max-rows", type=int, default=None,
+                       help="keep only the most recent N transactions (for a slow VM); omit for the full file")
         if name == "export":
             p.add_argument("--out-dir", default=os.path.join(data, "features"))
     args = ap.parse_args(argv)
@@ -30,13 +32,14 @@ def main(argv=None) -> int:
     from . import pipeline
 
     if args.cmd == "train":
-        report = pipeline.train(args.source, args.path, args.model_dir)
+        report = pipeline.train(args.source, args.path, args.model_dir, max_rows=args.max_rows)
         print(json.dumps(report, indent=1))
         if report["synthetic"]:
             print("NOTE: synthetic look-alike data — these numbers only check that the pipeline runs, not accuracy.",
                   file=sys.stderr)
     else:
-        print(json.dumps(pipeline.export(args.source, args.path, args.out_dir, args.model_dir), indent=1))
+        print(json.dumps(pipeline.export(args.source, args.path, args.out_dir, args.model_dir,
+                                         max_rows=args.max_rows), indent=1))
     return 0
 
 
