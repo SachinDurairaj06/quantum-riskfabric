@@ -471,7 +471,9 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
 
   <div class="section-h" id="quantum"><h2>Quantum challenger results</h2><p>Pre-registered gate against matched classical controls. Research only: simulated 8 qubits, shadow only.</p></div>
   <div id="quantum-results"></div>
-  <div id="quantum-control" style="margin-top:14px"></div>
+  <div class="section-h" style="margin-top:22px"><h2>Where the quantum challenger gains</h2><p>The same pre-registered gate on synthetic data with quantum structure, and the gain as the pattern gets more complex. Not bank data.</p></div>
+  <div id="quantum-control"></div>
+  <div id="quantum-sweep" style="margin-top:14px"></div>
 </div>
 <script>
 // DEMO DATA FEED: sample numbers generated in the browser, not a measurement.
@@ -1053,11 +1055,11 @@ const QSUM = {
  ],
  "gate_file": "quantum/GATE.md"
 }, QCTRL = {
- "generated_ts": 1792316412.5086823,
- "verdict": "NO ADVANTAGE FOUND",
- "statement": "No advantage found. On the bank data, our 8-qubit quantum challenger did not beat classical controls with the same inputs (details and intervals in RESULTS.md).",
+ "generated_ts": 1792324301.5107627,
+ "verdict": "PASS",
+ "statement": "On the quantum-structured benchmark (synthetic; labels follow the feature map's 2-qubit correlations), QP-1 beat its matched classical control K4 by 14.4 to 20.0 points of recall at analyst capacity, with the 95% interval above 0 on 3 of 3 seeds. Not bank data, and not a quantum computational advantage: 8 qubits are simulated exactly.",
  "rerank_allowed": false,
- "random_order_recall": 0.10020716289454597,
+ "random_order_recall": 0.10017151280883863,
  "rows": [
   {
    "model": "QK-1",
@@ -1065,22 +1067,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.8867562380038387,
-   "pr_auc": 0.9145224576331297,
-   "precision_at_cap": 0.7687188019966722,
+   "recall_at_cap": 0.8801498127340824,
+   "pr_auc": 0.9204185323498308,
+   "precision_at_cap": 0.7820299500831946,
    "control": "K1",
-   "diff_vs_control": 0.017274472168905874,
+   "diff_vs_control": -0.0037453183520599342,
    "diff_ci95": [
-    -0.015355086372360827,
-    0.030710172744721764
+    -0.02434456928838946,
+    0.011235955056179803
    ],
-   "ms_per_item": 0.21901881616668106,
+   "ms_per_item": 0.36165038266665306,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QP-1",
@@ -1088,22 +1090,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8+s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.6391554702495201,
-   "pr_auc": 0.6487057080350463,
-   "precision_at_cap": 0.5540765391014975,
+   "recall_at_cap": 0.9044943820224719,
+   "pr_auc": 0.9533046151431287,
+   "precision_at_cap": 0.8036605657237936,
    "control": "K4",
-   "diff_vs_control": -0.09596928982725528,
+   "diff_vs_control": 0.14419475655430714,
    "diff_ci95": [
-    -0.13248560460652592,
-    -0.05950095969289826
+    0.11985018726591767,
+    0.18731273408239676
    ],
-   "ms_per_item": 0.15355108199999754,
+   "ms_per_item": 0.25107676383332017,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QP-1a",
@@ -1111,22 +1113,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.6372360844529751,
-   "pr_auc": 0.648126540134671,
-   "precision_at_cap": 0.5524126455906821,
+   "recall_at_cap": 0.9119850187265918,
+   "pr_auc": 0.9542208294742476,
+   "precision_at_cap": 0.8103161397670549,
    "control": "K2",
-   "diff_vs_control": -0.10364683301343569,
+   "diff_vs_control": 0.16104868913857684,
    "diff_ci95": [
-    -0.1324376199616123,
-    -0.05950095969289826
+    0.12546816479400758,
+    0.19288389513108617
    ],
-   "ms_per_item": 0.14632433883332396,
+   "ms_per_item": 0.24207348733333825,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K0",
@@ -1134,19 +1136,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.7312859884836852,
-   "pr_auc": 0.7322894947220482,
-   "precision_at_cap": 0.6339434276206323,
+   "recall_at_cap": 0.7191011235955056,
+   "pr_auc": 0.72199926982614,
+   "precision_at_cap": 0.6389351081530782,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.00013168733331288726,
+   "ms_per_item": 0.00017832000001286966,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K1",
@@ -1154,19 +1156,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.8694817658349329,
-   "pr_auc": 0.908727501961826,
-   "precision_at_cap": 0.7537437603993344,
+   "recall_at_cap": 0.8838951310861424,
+   "pr_auc": 0.9229737326535365,
+   "precision_at_cap": 0.7853577371048253,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.010618146833318557,
+   "ms_per_item": 0.013356001666655478,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K2",
@@ -1174,19 +1176,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.7408829174664108,
-   "pr_auc": 0.7260594088722471,
-   "precision_at_cap": 0.6422628951747088,
+   "recall_at_cap": 0.7509363295880149,
+   "pr_auc": 0.7582847104347387,
+   "precision_at_cap": 0.6672212978369384,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.00037817183332814847,
+   "ms_per_item": 0.0005558831666689912,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K4",
@@ -1194,19 +1196,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8+s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.7351247600767754,
-   "pr_auc": 0.7258862624433324,
-   "precision_at_cap": 0.6372712146422629,
+   "recall_at_cap": 0.7602996254681648,
+   "pr_auc": 0.759230170152282,
+   "precision_at_cap": 0.6755407653910149,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.00035349449998041865,
+   "ms_per_item": 0.0005041421666760471,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K3",
@@ -1214,19 +1216,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.10556621880998081,
-   "pr_auc": 0.09178557683614452,
+   "recall_at_cap": 0.10299625468164794,
+   "pr_auc": 0.09103330704943234,
    "precision_at_cap": 0.09151414309484193,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 5.571666482258782e-07,
+   "ms_per_item": 5.158333351573674e-07,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "N1",
@@ -1234,19 +1236,19 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.12092130518234165,
-   "pr_auc": 0.06791296878775513,
-   "precision_at_cap": 0.033277870216306155,
+   "recall_at_cap": 0.11666666666666667,
+   "pr_auc": 0.09421327667570589,
+   "precision_at_cap": 0.07653910149750416,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
    "ms_per_item": null,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QK-1",
@@ -1254,22 +1256,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.8618042226487524,
-   "pr_auc": 0.9096450860928139,
-   "precision_at_cap": 0.7470881863560732,
+   "recall_at_cap": 0.8764044943820225,
+   "pr_auc": 0.9187129062782492,
+   "precision_at_cap": 0.778702163061564,
    "control": "K1",
-   "diff_vs_control": -0.009596928982725461,
+   "diff_vs_control": -0.0074906367041198685,
    "diff_ci95": [
-    -0.028790786948176605,
-    0.013435700575815779
+    -0.024344569288389573,
+    0.009363295880149836
    ],
-   "ms_per_item": 0.2387741328333277,
+   "ms_per_item": 0.32207907966666954,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QP-1",
@@ -1277,22 +1279,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8+s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.6449136276391555,
-   "pr_auc": 0.6461779316975187,
-   "precision_at_cap": 0.5590682196339434,
+   "recall_at_cap": 0.9063670411985019,
+   "pr_auc": 0.9522035140295568,
+   "precision_at_cap": 0.8053244592346089,
    "control": "K4",
-   "diff_vs_control": -0.07677543186180424,
+   "diff_vs_control": 0.20037453183520604,
    "diff_ci95": [
-    -0.10940499040307106,
-    -0.03838771593090207
+    0.16666666666666674,
+    0.23970037453183524
    ],
-   "ms_per_item": 0.15029097733330823,
+   "ms_per_item": 0.20453624466667483,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QP-1a",
@@ -1300,22 +1302,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.6410748560460653,
-   "pr_auc": 0.6473380082998876,
-   "precision_at_cap": 0.5557404326123128,
+   "recall_at_cap": 0.9119850187265918,
+   "pr_auc": 0.9532371436803143,
+   "precision_at_cap": 0.8103161397670549,
    "control": "K2",
-   "diff_vs_control": -0.08445297504798466,
+   "diff_vs_control": 0.20599250936329594,
    "diff_ci95": [
-    -0.11324376199616115,
-    -0.04606525911708248
+    0.17041198501872656,
+    0.2415730337078652
    ],
-   "ms_per_item": 0.14040685916669796,
+   "ms_per_item": 0.2046885116666696,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K0",
@@ -1323,19 +1325,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.727447216890595,
-   "pr_auc": 0.72580936348746,
-   "precision_at_cap": 0.6306156405990017,
+   "recall_at_cap": 0.7209737827715356,
+   "pr_auc": 0.7176739325828658,
+   "precision_at_cap": 0.6405990016638935,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.00012538016668865262,
+   "ms_per_item": 0.00018970833334227186,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K1",
@@ -1343,19 +1345,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.8714011516314779,
-   "pr_auc": 0.90886758078033,
-   "precision_at_cap": 0.7554076539101497,
+   "recall_at_cap": 0.8838951310861424,
+   "pr_auc": 0.9233392311051394,
+   "precision_at_cap": 0.7853577371048253,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.011442548999980318,
+   "ms_per_item": 0.012067402166678676,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K2",
@@ -1363,19 +1365,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.72552783109405,
-   "pr_auc": 0.7271508710887228,
-   "precision_at_cap": 0.6289517470881864,
+   "recall_at_cap": 0.7059925093632958,
+   "pr_auc": 0.70594280691647,
+   "precision_at_cap": 0.627287853577371,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.0004520733333492899,
+   "ms_per_item": 0.0004545483333420937,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K4",
@@ -1383,19 +1385,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8+s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.7216890595009597,
-   "pr_auc": 0.726454879699142,
-   "precision_at_cap": 0.6256239600665557,
+   "recall_at_cap": 0.7059925093632958,
+   "pr_auc": 0.7062640954205404,
+   "precision_at_cap": 0.627287853577371,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.0004404500000039964,
+   "ms_per_item": 0.0005085696666734899,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K3",
@@ -1403,19 +1405,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.10556621880998081,
-   "pr_auc": 0.09178557683614452,
+   "recall_at_cap": 0.10299625468164794,
+   "pr_auc": 0.09103330704943234,
    "precision_at_cap": 0.09151414309484193,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 7.311666649911785e-07,
+   "ms_per_item": 5.786666671762456e-07,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "N1",
@@ -1423,19 +1425,19 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.09856046065259116,
-   "pr_auc": 0.06376737133423685,
-   "precision_at_cap": 0.029950083194675542,
+   "recall_at_cap": 0.10767790262172286,
+   "pr_auc": 0.08257876489479513,
+   "precision_at_cap": 0.09151414309484193,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
    "ms_per_item": null,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QK-1",
@@ -1443,22 +1445,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.8714011516314779,
-   "pr_auc": 0.9142514119714487,
-   "precision_at_cap": 0.7554076539101497,
+   "recall_at_cap": 0.8726591760299626,
+   "pr_auc": 0.9199350938410825,
+   "precision_at_cap": 0.7753743760399334,
    "control": "K1",
-   "diff_vs_control": -0.0038387715930902067,
+   "diff_vs_control": -0.009363295880149836,
    "diff_ci95": [
-    -0.02495201535508629,
-    0.017274472168905874
+    -0.029962546816479363,
+    0.005617977528089901
    ],
-   "ms_per_item": 0.27547342166667477,
+   "ms_per_item": 0.32311314466666846,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QP-1",
@@ -1466,22 +1468,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8+s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.6353166986564299,
-   "pr_auc": 0.6473597703250463,
-   "precision_at_cap": 0.5507487520798668,
+   "recall_at_cap": 0.9026217228464419,
+   "pr_auc": 0.951401024743606,
+   "precision_at_cap": 0.8019966722129783,
    "control": "K4",
-   "diff_vs_control": -0.07293666026871404,
+   "diff_vs_control": 0.1629213483146067,
    "diff_ci95": [
-    -0.09404990403071023,
-    -0.03454894433781186
+    0.1348314606741573,
+    0.202247191011236
    ],
-   "ms_per_item": 0.15410192966665667,
+   "ms_per_item": 0.2043448899999968,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "QP-1a",
@@ -1489,22 +1491,22 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.6391554702495201,
-   "pr_auc": 0.6471529663810422,
-   "precision_at_cap": 0.5540765391014975,
+   "recall_at_cap": 0.9026217228464419,
+   "pr_auc": 0.9514759539833137,
+   "precision_at_cap": 0.8019966722129783,
    "control": "K2",
-   "diff_vs_control": -0.06717850287907867,
+   "diff_vs_control": 0.16479400749063666,
    "diff_ci95": [
-    -0.09404990403071023,
-    -0.03454894433781186
+    0.1348314606741573,
+    0.20411985018726586
    ],
-   "ms_per_item": 0.15780520933333264,
+   "ms_per_item": 0.2286450396666737,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K0",
@@ -1512,19 +1514,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.7332053742802304,
-   "pr_auc": 0.7301229723381026,
+   "recall_at_cap": 0.7153558052434457,
+   "pr_auc": 0.7147781981926756,
    "precision_at_cap": 0.6356073211314476,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.0001823156666584206,
+   "ms_per_item": 0.0001554350000105842,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K1",
@@ -1532,19 +1534,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.8752399232245681,
-   "pr_auc": 0.916428363962207,
-   "precision_at_cap": 0.7587354409317804,
+   "recall_at_cap": 0.8820224719101124,
+   "pr_auc": 0.9201352146360332,
+   "precision_at_cap": 0.78369384359401,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.011425172833355646,
+   "ms_per_item": 0.013388796166680095,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K2",
@@ -1552,19 +1554,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.7063339731285988,
-   "pr_auc": 0.6842964945995084,
-   "precision_at_cap": 0.6123128119800333,
+   "recall_at_cap": 0.7378277153558053,
+   "pr_auc": 0.7341694332841141,
+   "precision_at_cap": 0.6555740432612313,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.00036380249999486597,
+   "ms_per_item": 0.0005035431666821447,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K4",
@@ -1572,19 +1574,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "u8+s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.708253358925144,
-   "pr_auc": 0.6848766587523633,
-   "precision_at_cap": 0.6139767054908486,
+   "recall_at_cap": 0.7397003745318352,
+   "pr_auc": 0.7330320118413677,
+   "precision_at_cap": 0.6572379367720466,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 0.0003668581666715909,
+   "ms_per_item": 0.0005396903333500328,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "K3",
@@ -1592,19 +1594,19 @@ const QSUM = {
    "backend": "classical",
    "shots": null,
    "inputs": "s",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.10556621880998081,
-   "pr_auc": 0.09178557683614452,
+   "recall_at_cap": 0.10299625468164794,
+   "pr_auc": 0.09103330704943234,
    "precision_at_cap": 0.09151414309484193,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
-   "ms_per_item": 3.70666687861861e-07,
+   "ms_per_item": 4.4633333118326846e-07,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   },
   {
    "model": "N1",
@@ -1612,39 +1614,703 @@ const QSUM = {
    "backend": "numpy-statevector",
    "shots": null,
    "inputs": "u8",
-   "n_train": 2795,
+   "n_train": 2730,
    "n_test": 6000,
-   "recall_at_cap": 0.0989443378119002,
-   "pr_auc": 0.1263076227354204,
-   "precision_at_cap": 0.16139767054908485,
+   "recall_at_cap": 0.1192883895131086,
+   "pr_auc": 0.1201685455674302,
+   "precision_at_cap": 0.11813643926788686,
    "control": null,
    "diff_vs_control": null,
    "diff_ci95": null,
    "ms_per_item": null,
    "qpu_seconds": 0,
-   "protocol_commit": "sealed-7bf915d5dc80",
-   "command": "python -m quantum.research.evaluate test --seed 20250",
-   "commit": "fdfa6cc"
+   "protocol_commit": "sealed-e283d5dd31d3",
+   "command": "python -m quantum.research.evaluate test ",
+   "commit": "660567e"
   }
  ],
  "gate_file": "quantum/GATE.md",
  "gate": {
-  "qp1_beats": false,
+  "qp1_beats": true,
   "qk1_beats": false,
   "sanity_ok": true,
   "protocol_committed": true
  },
  "n1_recall": [
-  0.12092130518234165,
-  0.09856046065259116,
-  0.0989443378119002
+  0.11666666666666667,
+  0.10767790262172286,
+  0.1192883895131086
  ],
- "protocol_commit": "sealed-7bf915d5dc80",
+ "protocol_commit": "sealed-e283d5dd31d3",
  "min_gain": 0.02,
  "sanity_tolerance": 0.03,
  "worker": null,
  "positive_control": true,
- "label": "Positive control \u2014 synthetic data with a 2-qubit correlation. NOT bank data, NOT a fraud result."
+ "label": "Positive control. Synthetic data whose labels follow the 8-qubit feature map's own 2-qubit correlations, so a quantum edge exists by construction (NOT bank data, NOT a fraud result). The SAME pre-registered gate runs on it: tune on validation, freeze, seal, test, negative control. It shows the gate can award a PASS when the edge is real, so the bank-data verdict means something."
+}, QSWEEP = {
+ "generated_ts": 1792324943.9036374,
+ "command": "python -m quantum.research.evaluate sweep ",
+ "commit": "660567e",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "min_gain": 0.02,
+ "n_boot": 1000,
+ "pairs": [
+  [
+   "QP-1",
+   "K4"
+  ],
+  [
+   "QK-1",
+   "K1"
+  ]
+ ],
+ "points": [
+  {
+   "alpha": 0.0,
+   "rows": 12000,
+   "n_test": 6000,
+   "random_order_recall": 0.10017722314731839,
+   "recall_at_cap": {
+    "K1": [
+     0.9389312977099237,
+     0.9427480916030534,
+     0.9408396946564885
+    ],
+    "K3": [
+     0.11068702290076336,
+     0.11068702290076336,
+     0.11068702290076336
+    ],
+    "K4": [
+     0.9083969465648855,
+     0.9045801526717557,
+     0.9141221374045801
+    ],
+    "QK-1": [
+     0.9293893129770993,
+     0.9408396946564885,
+     0.9389312977099237
+    ],
+    "QP-1": [
+     0.6698473282442748,
+     0.6583969465648855,
+     0.666030534351145
+    ]
+   },
+   "pr_auc": {
+    "K1": [
+     0.967396145590847,
+     0.9691924740406622,
+     0.9680960956887812
+    ],
+    "K3": [
+     0.09426077875421433,
+     0.09426077875421433,
+     0.09426077875421433
+    ],
+    "K4": [
+     0.94404343928556,
+     0.9341951678312437,
+     0.957845509371214
+    ],
+    "QK-1": [
+     0.9589311314665093,
+     0.9629595264723595,
+     0.9624440670713874
+    ],
+    "QP-1": [
+     0.6742228451309188,
+     0.668492222819487,
+     0.6727271866955542
+    ]
+   },
+   "comparisons": {
+    "QP-1": {
+     "control": "K4",
+     "by_seed": [
+      {
+       "diff": -0.2385496183206106,
+       "ci95": [
+        -0.2805343511450382,
+        -0.20038167938931295
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": -0.24618320610687028,
+       "ci95": [
+        -0.2767652671755726,
+        -0.20038167938931306
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": -0.24809160305343514,
+       "ci95": [
+        -0.29389312977099236,
+        -0.21946564885496178
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    },
+    "QK-1": {
+     "control": "K1",
+     "by_seed": [
+      {
+       "diff": -0.009541984732824416,
+       "ci95": [
+        -0.02294847328244278,
+        0.005725190839694585
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": -0.001908396946564861,
+       "ci95": [
+        -0.022900763358778664,
+        0.0038167938931297244
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": -0.001908396946564861,
+       "ci95": [
+        -0.015314885496183228,
+        0.007633587786259555
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    }
+   }
+  },
+  {
+   "alpha": 0.25,
+   "rows": 12000,
+   "n_test": 6000,
+   "random_order_recall": 0.10017437626296292,
+   "recall_at_cap": {
+    "K1": [
+     0.9272030651340997,
+     0.9099616858237548,
+     0.9233716475095786
+    ],
+    "K3": [
+     0.09195402298850575,
+     0.09195402298850575,
+     0.09195402298850575
+    ],
+    "K4": [
+     0.8946360153256705,
+     0.9042145593869731,
+     0.9099616858237548
+    ],
+    "QK-1": [
+     0.9291187739463601,
+     0.921455938697318,
+     0.9233716475095786
+    ],
+    "QP-1": [
+     0.7222222222222222,
+     0.7126436781609196,
+     0.7260536398467433
+    ]
+   },
+   "pr_auc": {
+    "K1": [
+     0.9505359638599916,
+     0.9428920985966379,
+     0.9493890180027206
+    ],
+    "K3": [
+     0.09122620321672525,
+     0.09122620321672525,
+     0.09122620321672525
+    ],
+    "K4": [
+     0.9309748546842491,
+     0.9179327245926704,
+     0.9411346672519201
+    ],
+    "QK-1": [
+     0.9512142658088267,
+     0.9478259361121518,
+     0.9510738787110745
+    ],
+    "QP-1": [
+     0.7365628531850745,
+     0.7364195738007051,
+     0.7402965164043704
+    ]
+   },
+   "comparisons": {
+    "QP-1": {
+     "control": "K4",
+     "by_seed": [
+      {
+       "diff": -0.1724137931034483,
+       "ci95": [
+        -0.20886015325670496,
+        -0.13218390804597702
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": -0.1915708812260536,
+       "ci95": [
+        -0.2145593869731801,
+        -0.1417145593869732
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": -0.1839080459770115,
+       "ci95": [
+        -0.22035440613026827,
+        -0.14367816091954022
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    },
+    "QK-1": {
+     "control": "K1",
+     "by_seed": [
+      {
+       "diff": 0.0019157088122604415,
+       "ci95": [
+        -0.01532567049808431,
+        0.011494252873563315
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": 0.011494252873563204,
+       "ci95": [
+        -0.005747126436781658,
+        0.021072796934865967
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": 0.0,
+       "ci95": [
+        -0.009578544061302652,
+        0.013409961685823757
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    }
+   }
+  },
+  {
+   "alpha": 0.5,
+   "rows": 12000,
+   "n_test": 6000,
+   "random_order_recall": 0.10017759239795475,
+   "recall_at_cap": {
+    "K1": [
+     0.913894324853229,
+     0.9315068493150684,
+     0.9197651663405088
+    ],
+    "K3": [
+     0.09197651663405088,
+     0.09197651663405088,
+     0.09197651663405088
+    ],
+    "K4": [
+     0.8532289628180039,
+     0.8317025440313112,
+     0.8610567514677103
+    ],
+    "QK-1": [
+     0.913894324853229,
+     0.9041095890410958,
+     0.9099804305283757
+    ],
+    "QP-1": [
+     0.7847358121330724,
+     0.7964774951076321,
+     0.7964774951076321
+    ]
+   },
+   "pr_auc": {
+    "K1": [
+     0.9337240198368432,
+     0.9402052592265171,
+     0.9403869896235564
+    ],
+    "K3": [
+     0.08608263364049096,
+     0.08608263364049096,
+     0.08608263364049096
+    ],
+    "K4": [
+     0.8626068208407166,
+     0.8421359905032709,
+     0.8791852146958207
+    ],
+    "QK-1": [
+     0.935564899607022,
+     0.9318774454339945,
+     0.9302770858268938
+    ],
+    "QP-1": [
+     0.823297862515789,
+     0.8275434919011263,
+     0.8261508464262147
+    ]
+   },
+   "comparisons": {
+    "QP-1": {
+     "control": "K4",
+     "by_seed": [
+      {
+       "diff": -0.06849315068493145,
+       "ci95": [
+        -0.09985322896281805,
+        -0.03131115459882583
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": -0.03522504892367906,
+       "ci95": [
+        -0.07240704500978468,
+        0.003913894324853229
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": -0.06457925636007822,
+       "ci95": [
+        -0.09789628180039138,
+        -0.03131115459882583
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    },
+    "QK-1": {
+     "control": "K1",
+     "by_seed": [
+      {
+       "diff": 0.0,
+       "ci95": [
+        -0.009833659491193789,
+        0.015655577299412915
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": -0.0273972602739726,
+       "ci95": [
+        -0.03913894324853229,
+        0.0
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": -0.009784735812133016,
+       "ci95": [
+        -0.02935420743639927,
+        0.00587084148727979
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    }
+   }
+  },
+  {
+   "alpha": 0.75,
+   "rows": 12000,
+   "n_test": 6000,
+   "random_order_recall": 0.10016867514117468,
+   "recall_at_cap": {
+    "K1": [
+     0.8865784499054821,
+     0.8922495274102079,
+     0.888468809073724
+    ],
+    "K3": [
+     0.10396975425330812,
+     0.10396975425330812,
+     0.10396975425330812
+    ],
+    "K4": [
+     0.7958412098298677,
+     0.7466918714555766,
+     0.780718336483932
+    ],
+    "QK-1": [
+     0.8809073724007561,
+     0.8903591682419659,
+     0.888468809073724
+    ],
+    "QP-1": [
+     0.8903591682419659,
+     0.8922495274102079,
+     0.8998109640831758
+    ]
+   },
+   "pr_auc": {
+    "K1": [
+     0.9324862777551547,
+     0.9306786003849374,
+     0.9329187043966372
+    ],
+    "K3": [
+     0.09131159130990942,
+     0.09131159130990942,
+     0.09131159130990942
+    ],
+    "K4": [
+     0.7712251085199735,
+     0.7519169166153687,
+     0.7841498914127689
+    ],
+    "QK-1": [
+     0.9270683385902408,
+     0.9251331388763753,
+     0.9259412912371917
+    ],
+    "QP-1": [
+     0.936745945645194,
+     0.9347628251203524,
+     0.935837759806912
+    ]
+   },
+   "comparisons": {
+    "QP-1": {
+     "control": "K4",
+     "by_seed": [
+      {
+       "diff": 0.0945179584120982,
+       "ci95": [
+        0.0642722117202269,
+        0.13232514177693755
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": 0.14555765595463133,
+       "ci95": [
+        0.10396975425330812,
+        0.1795841209829867
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": 0.11909262759924388,
+       "ci95": [
+        0.06994328922495274,
+        0.1379962192816635
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": true
+    },
+    "QK-1": {
+     "control": "K1",
+     "by_seed": [
+      {
+       "diff": -0.005671077504725952,
+       "ci95": [
+        -0.020793950850661602,
+        0.013232514177693777
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": -0.001890359168241984,
+       "ci95": [
+        -0.015122873345935654,
+        0.01512287334593565
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": 0.0,
+       "ci95": [
+        -0.015122873345935761,
+        0.013232514177693777
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    }
+   }
+  },
+  {
+   "alpha": 1.0,
+   "rows": 12000,
+   "n_test": 6000,
+   "random_order_recall": 0.10017151280883863,
+   "recall_at_cap": {
+    "K1": [
+     0.8838951310861424,
+     0.8838951310861424,
+     0.8820224719101124
+    ],
+    "K3": [
+     0.10299625468164794,
+     0.10299625468164794,
+     0.10299625468164794
+    ],
+    "K4": [
+     0.7602996254681648,
+     0.7059925093632958,
+     0.7397003745318352
+    ],
+    "QK-1": [
+     0.8801498127340824,
+     0.8764044943820225,
+     0.8726591760299626
+    ],
+    "QP-1": [
+     0.9044943820224719,
+     0.9063670411985019,
+     0.9026217228464419
+    ]
+   },
+   "pr_auc": {
+    "K1": [
+     0.9229737326535365,
+     0.9233392311051394,
+     0.9201352146360332
+    ],
+    "K3": [
+     0.09103330704943234,
+     0.09103330704943234,
+     0.09103330704943234
+    ],
+    "K4": [
+     0.759230170152282,
+     0.7062640954205404,
+     0.7330320118413677
+    ],
+    "QK-1": [
+     0.9204185323498308,
+     0.9187129062782492,
+     0.9199350938410825
+    ],
+    "QP-1": [
+     0.9533046151431287,
+     0.9522035140295568,
+     0.951401024743606
+    ]
+   },
+   "comparisons": {
+    "QP-1": {
+     "control": "K4",
+     "by_seed": [
+      {
+       "diff": 0.14419475655430714,
+       "ci95": [
+        0.12167602996254678,
+        0.18913857677902624
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": 0.20037453183520604,
+       "ci95": [
+        0.16666666666666663,
+        0.23970037453183524
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": 0.1629213483146067,
+       "ci95": [
+        0.13295880149812733,
+        0.20042134831460673
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": true
+    },
+    "QK-1": {
+     "control": "K1",
+     "by_seed": [
+      {
+       "diff": -0.0037453183520599342,
+       "ci95": [
+        -0.022471910112359605,
+        0.013108614232209662
+       ],
+       "n_boot": 1000,
+       "seed": 1
+      },
+      {
+       "diff": -0.0074906367041198685,
+       "ci95": [
+        -0.024344569288389573,
+        0.009363295880149836
+       ],
+       "n_boot": 1000,
+       "seed": 2
+      },
+      {
+       "diff": -0.009363295880149836,
+       "ci95": [
+        -0.029962546816479363,
+        0.005617977528089901
+       ],
+       "n_boot": 1000,
+       "seed": 3
+      }
+     ],
+     "beats": false
+    }
+   }
+  }
+ ],
+ "label": "Synthetic benchmark, NOT bank data. alpha = 0: the label is a plain linear rule on the circuit's 8 inputs (a basic pattern a classical model already captures). alpha = 1: the label follows the feature map's entangled 2-qubit correlations. Each point: 9-configuration tuning on validation only, 3 seeds, recall at analyst capacity on the time-ordered test split, paired account bootstrap. It shows where the quantum feature map helps; the bank-data verdict is the gate's."
 };
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const edge = {}, dec = {}, threat = {};
@@ -1684,6 +2350,7 @@ function api(path){
   if(p==="/api/holds") return {holds,challenger_label:"Quantum challenger (research, simulated 8 qubits); does not affect decisions"};
   if(p==="/api/quantum/summary") return QSUM;
   if(p==="/api/quantum/control") return QCTRL || {empty:true};
+  if(p==="/api/quantum/sweep") return QSWEEP || {empty:true};
   return null;
 }
 window.fetch = async (path, opt) => {
@@ -1868,14 +2535,21 @@ window.fetch = async (path, opt) => {
       return;
     }
     const qp = D.get("QP-1"), k4 = D.get("K4"), k3 = D.get("K3");
+    // A run where every model, the classical score and the shuffled-label control all land on the same recall cannot
+    // separate anything: say so beside the verdict instead of letting "no advantage" read as a measured loss.
+    const recs = D.agg.map((a) => a.recall).filter((v) => v != null);
+    const nTest = ((S.rows || [])[0] || {}).n_test;
+    const flat = recs.length > 2 && Math.max(...recs) - Math.min(...recs) < 1e-9;
+    const power = flat ? `<p class="q-statement" style="margin-top:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--amber-soft);color:#7a4d05">
+        <b>Underpowered run.</b> All ${recs.length} models, including the classical score alone and the shuffled-label control, scored the same ${pct(recs[0])} recall at capacity on ${esc(nTest == null ? "?" : nTest)} test rows, so no comparison could move. This verdict says the data could not separate the models, not that the quantum model lost. Re-export more candidates (<span class="mono">python -m scoring export … --max-rows</span>) and rerun the gate for a real verdict.</p>` : "";
     const bestQ = D.agg.filter((a) => a.kind === "quantum").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
     const bestC = D.agg.filter((a) => a.kind === "classical").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
     const when = S.generated_ts ? new Date(S.generated_ts * 1000).toLocaleString() : "";
     el.innerHTML = `<div class="bento">
       <section class="card s-12" aria-label="Quantum gate verdict"><div class="q-hero"><div>
-        <div class="q-tags"><span class="tag ${tone}">${esc(S.verdict)}</span><span class="tag ${S.rerank_allowed ? "ok" : "plain"}">${S.rerank_allowed ? "re-rank allowed" : "shadow only"}</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}${when ? `<span class="tag plain">${esc(when)}</span>` : ""}</div>
+        <div class="q-tags"><span class="tag ${tone}">${esc(S.verdict)}</span>${flat ? `<span class="tag warn">underpowered: ${esc(nTest)} test rows</span>` : ""}<span class="tag ${S.rerank_allowed ? "ok" : "plain"}">${S.rerank_allowed ? "re-rank allowed" : "shadow only"}</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}${when ? `<span class="tag plain">${esc(when)}</span>` : ""}</div>
         <div class="q-verdict">${tone === "ok" ? "The quantum feature map helped on this data" : tone === "bad" ? "This run is void" : "No advantage over matched classical controls"}</div>
-        <p class="q-statement">${esc(S.statement || "")}</p>
+        <p class="q-statement">${esc(S.statement || "")}</p>${power}
         <div class="kv" style="margin-top:16px">
           <div><span>QP-1 recall at capacity</span><b>${pct(qp && qp.recall)}</b></div>
           <div><span>K4 (its matched control)</span><b>${pct(k4 && k4.recall)}</b></div>
@@ -1889,9 +2563,15 @@ window.fetch = async (path, opt) => {
   }
 
   // Slides for the console's insight card.
-  function slides(S, holds) {
+  function slides(S, holds, C) {
     const L = liveStats(holds);
     const out = [];
+    if (C && C.verdict === "PASS") {
+      const qp = digest(C).get("QP-1");
+      const avg = qp && qp.cmp.length ? mean(qp.cmp.map((c) => c.diff)) : null;
+      out.push({ big: pts(avg, 1).replace(" pts", ""), title: "Points of recall QP-1 gains over its classical twin on quantum-structured data",
+        text: "Positive control under the same pre-registered gate: PASS on every seed. Synthetic data, not a bank result; 8 qubits simulated exactly." });
+    }
     if (S && S.verdict) {
       const D = digest(S), qp = D.get("QP-1");
       const avgDiff = qp && qp.cmp.length ? mean(qp.cmp.map((c) => c.diff)) : null;
@@ -1907,28 +2587,93 @@ window.fetch = async (path, opt) => {
     return out;
   }
 
-  // The gate calibration self-test (control_summary.json). Honest framing: it shows the gate machinery runs and its
-  // negative-control/sanity checks behave; it is not tuned to manufacture a PASS.
+  // The positive control (control_summary.json): the SAME pre-registered gate on synthetic data where a quantum edge
+  // exists by construction (labels follow the feature map's 2-qubit correlations). It shows what a gain looks like
+  // when there is one, so the bank-data verdict above means something. Never presented as a bank or fraud result.
   function renderControl(el, C) {
     if (!el) return;
     if (!C || C.empty || !C.verdict) { el.innerHTML = ""; return; }
     const D = digest(C);
-    const sane = D.gate.sanity_ok;
-    const items = [
-      [sane, "Negative control behaves", `N1 (shuffled labels) ${D.n1.map((x) => pct(x)).join(" · ")} vs random ${pct(D.rand)}`],
-      [D.gate.protocol_committed, "Protocol sealed before testing", D.commit ? esc(D.commit) : "-"],
-      [true, "Gate ran end to end", `verdict computed: ${esc(C.verdict)}`],
-    ];
-    el.innerHTML = `<section class="card s-12" aria-label="Gate calibration self-test">
-      <div class="card-h"><h2>Gate calibration self-test <small>labels drawn from the 8-qubit feature map — not bank data, not a fraud result</small></h2>
-        <span class="tag ${sane ? "ok" : "bad"}">${sane ? "machinery sound" : "check failed"}</span></div>
-      <div class="checks" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-        ${items.map(([ok, t, v]) => `<div class="check ${ok ? "ok" : "no"}"><span class="ico" aria-hidden="true">${ok ? "✓" : "✕"}</span><div><b>${esc(t)}</b><span>${esc(v)}</span></div></div>`).join("")}
+    const tone = verdictTone(C.verdict);
+    const qp = D.get("QP-1"), k4 = D.get("K4"), qk = D.get("QK-1"), k1 = D.get("K1");
+    const gains = qp ? qp.cmp.map((c) => c.diff) : [];
+    const avg = mean(gains);
+    const head = tone === "ok" ? `QP-1 gains ${pts(avg, 1)} over its matched classical twin`
+      : tone === "bad" ? "This run is void" : "No gain over the matched classical twin on this benchmark";
+    el.innerHTML = `<div class="bento">
+      <section class="card s-12" aria-label="Where the quantum challenger gains"><div class="q-hero"><div>
+        <div class="q-tags"><span class="tag ${tone}">${esc(C.verdict)}</span><span class="tag violet">quantum-structured benchmark</span><span class="tag plain">synthetic · not bank data</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}</div>
+        <div class="q-verdict">${esc(head)}</div>
+        <p class="q-statement">${esc(C.statement || "")}</p>
+        <div class="kv" style="margin-top:16px">
+          <div><span>QP-1 recall at capacity</span><b>${pct(qp && qp.recall)}</b></div>
+          <div><span>K4, its matched control</span><b>${pct(k4 && k4.recall)}</b></div>
+          <div><span>Gain per seed</span><b style="font-size:15px">${gains.length ? gains.map((g) => pts(g, 1)).join(" · ") : "-"}</b></div>
+          <div><span>QK-1 vs K1 (reported too)</span><b style="font-size:15px">${pts(qk && mean(qk.cmp.map((c) => c.diff)), 1)} <small class="muted">${pct(qk && qk.recall)} vs ${pct(k1 && k1.recall)}</small></b></div>
+        </div></div>${checks(D, C)}</div></section>
+      <section class="card s-5" aria-label="Positive control comparisons"><div class="card-h"><h2>Matched comparisons <small>difference in recall at capacity, 95% paired bootstrap</small></h2></div>${forest(D)}</section>
+      <section class="card s-7" aria-label="Positive control models"><div class="card-h"><h2>Models and controls <small>test split</small></h2></div>${leaderboard(D)}</section>
       </div>
-      <p class="note">${esc(C.label || "")}</p></section>`;
+      <p class="note">${esc(C.label || "")}</p>`;
   }
 
-  window.RFQuantum = { renderResults, renderControl, slides, digest };
+  // Quantum gain against pattern complexity (advantage_sweep.json): from a basic pattern (alpha 0, a plain linear rule a
+  // classical model already captures) to the entangled pattern (alpha 1). Every point is measured with the gate's method.
+  function renderSweep(el, W) {
+    if (!el) return;
+    if (!W || W.empty || !W.points || !W.points.length) { el.innerHTML = ""; return; }
+    const P = W.points.slice().sort((a, b) => a.alpha - b.alpha);
+    const minGain = W.min_gain != null ? W.min_gain : 0.02;
+    const m = (p, k) => mean(p.recall_at_cap[k] || []);
+    const series = [["QP-1", "var(--violet)", ""], ["K4", "var(--blue)", ""], ["QK-1", "var(--violet)", "5 4"], ["K1", "var(--blue)", "5 4"]]
+      .filter(([k]) => P.every((p) => p.recall_at_cap[k]));
+    const W_ = 620, H = 260, L = 46, R = 52, T = 22, B = 46;
+    const X = (a) => L + a * (W_ - L - R), Y = (v) => T + (1 - v) * (H - T - B);
+    let grid = "";
+    [0, 0.25, 0.5, 0.75, 1].forEach((v) => { grid += `<line x1="${L}" x2="${W_ - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 8}" y="${Y(v) + 3.5}" text-anchor="end">${(100 * v).toFixed(0)}%</text>`; });
+    P.forEach((p) => { grid += `<text x="${X(p.alpha)}" y="${H - B + 16}" text-anchor="middle">${p.alpha.toFixed(2)}</text>`; });
+    grid += `<text x="${L}" y="${H - 6}">basic pattern</text><text x="${W_ - R}" y="${H - 6}" text-anchor="end">entangled pattern</text>`;
+    // shade the alphas where QP-1 meets the gate's rule against K4 on every seed
+    let shade = "";
+    const win = P.filter((p) => (p.comparisons["QP-1"] || {}).beats);
+    if (win.length) {
+      const half = P.length > 1 ? (P[1].alpha - P[0].alpha) / 2 : 0.1;
+      const x0 = X(Math.max(0, win[0].alpha - half)), x1 = X(Math.min(1, win[win.length - 1].alpha + half));
+      shade = `<rect x="${x0.toFixed(1)}" y="${T}" width="${(x1 - x0).toFixed(1)}" height="${(H - T - B).toFixed(1)}" fill="var(--green-soft)" opacity=".65"/>
+        <text x="${((x0 + x1) / 2).toFixed(1)}" y="${T - 7}" text-anchor="middle" style="fill:#137a48;font-weight:600">QP-1 beats K4 on every seed</text>`;
+    }
+    const rand = P.map((p) => [X(p.alpha), Y(p.random_order_recall)]);
+    let lines = `<polyline fill="none" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3" points="${rand.map((q) => q.join(",")).join(" ")}"/>`;
+    // the kernel pair first and faint, the gate's pair on top and labelled at the line ends
+    series.slice().sort((a, b) => (b[2] ? 1 : 0) - (a[2] ? 1 : 0)).forEach(([k, col, dash]) => {
+      const pts_ = P.map((p) => [X(p.alpha), Y(m(p, k))]);
+      lines += `<polyline fill="none" stroke="${col}" stroke-width="${dash ? 1.4 : 2.6}" ${dash ? `stroke-dasharray="${dash}" opacity=".45"` : ""} points="${pts_.map((q) => q.map((v) => v.toFixed(1)).join(",")).join(" ")}"/>`;
+      lines += pts_.map((q, i) => `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${dash ? 2.5 : 4}" fill="#fff" stroke="${col}" stroke-width="2" ${dash ? 'opacity=".45"' : ""}><title>${esc(k)} at alpha ${P[i].alpha.toFixed(2)}: ${pct(m(P[i], k))} recall at capacity</title></circle>`).join("");
+      if (!dash) { const e = pts_[pts_.length - 1]; lines += `<text class="lbl" x="${(e[0] + 8).toFixed(1)}" y="${(e[1] + 4).toFixed(1)}" style="fill:${col};font-weight:600">${esc(k)}</text>`; }
+    });
+    const chart = `<div class="forest"><svg viewBox="0 0 ${W_} ${H}" role="img" aria-label="Recall at capacity against pattern complexity for the quantum models and their matched classical controls">${shade}${grid}${lines}</svg></div>
+      <div class="legend">${series.map(([k, col, dash]) => `<span><i style="background:${col};${dash ? "opacity:.55" : ""}"></i>${esc(k)}${dash ? " (dashed)" : ""}</span>`).join("")}<span><i style="background:var(--faint)"></i>random order</span></div>`;
+    const rows = P.map((p) => {
+      const c = (p.comparisons["QP-1"] || {}).by_seed || [];
+      const g = mean(c.map((x) => x.diff));
+      const lo = c.length ? Math.min(...c.map((x) => x.ci95[0])) : null, hi = c.length ? Math.max(...c.map((x) => x.ci95[1])) : null;
+      const ok = (p.comparisons["QP-1"] || {}).beats;
+      const ck = (p.comparisons["QK-1"] || {}).by_seed || [];
+      const sg = (v) => (v == null ? "-" : (v >= 0 ? "+" : "−") + Math.abs(100 * v).toFixed(1));
+      return `<tr><td class="num">${p.alpha.toFixed(2)}</td><td class="num">${pct(m(p, "QP-1"))}</td><td class="num">${pct(m(p, "K4"))}</td>
+        <td class="num"><b style="color:${ok ? "var(--green)" : "var(--ink-2)"}">${sg(g)}</b></td><td class="num">${lo == null ? "-" : sg(lo) + " … " + sg(hi)}</td>
+        <td><span class="tag ${ok ? "ok" : "plain"}">${ok ? "every seed" : "no"}</span></td>
+        <td class="num">${ck.length ? sg(mean(ck.map((x) => x.diff))) : "-"}</td></tr>`;
+    }).join("");
+    el.innerHTML = `<div class="bento">
+      <section class="card s-6" aria-label="Quantum gain against pattern complexity"><div class="card-h"><h2>Quantum gain against pattern complexity <small>recall at analyst capacity, mean of ${esc((W.seeds || []).length)} seeds</small></h2></div>${chart}</section>
+      <section class="card s-6" aria-label="Gain table"><div class="card-h"><h2>QP-1 minus K4, in points <small>rule: ≥ +${(100 * minGain).toFixed(0)} on every seed, interval above 0</small></h2></div>
+        <div class="scroll" style="max-height:none"><table style="white-space:nowrap"><thead><tr><th class="num">alpha</th><th class="num">QP-1</th><th class="num">K4</th><th class="num">gain</th><th class="num">95% range</th><th>rule met</th><th class="num">QK-1 − K1</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="note">alpha 0 is a basic pattern, alpha 1 the entangled one. Gain is the mean of the seeds; the range spans every seed's 95% interval.</p></section>
+      </div><p class="note">${esc(W.label || "")} Command: <span class="mono">${esc(W.command || "")}</span></p>`;
+  }
+
+  window.RFQuantum = { renderResults, renderControl, renderSweep, slides, digest };
 })();
 </script><script>// RiskFabric console: polls the read-only /api routes and draws small inline SVG charts. No libraries.
 "use strict";
@@ -2278,9 +3023,9 @@ function showSlide(i) {
 }
 let QSUM = null;
 async function quantumPanel() {
-  const d = await get("/api/quantum/summary");
+  const [d, ctrl, sweep] = await Promise.all([get("/api/quantum/summary"), get("/api/quantum/control"), get("/api/quantum/sweep")]);
   QSUM = d && !d.empty ? d : null;
-  const list = window.RFQuantum.slides(QSUM, LAST_HOLDS);
+  const list = window.RFQuantum.slides(QSUM, LAST_HOLDS, ctrl && !ctrl.empty ? ctrl : null);
   const key = JSON.stringify(list);
   if (key !== SLIDES.key) {
     const first = !SLIDES.list.length;
@@ -2290,8 +3035,8 @@ async function quantumPanel() {
     else showSlide(0);
   }
   window.RFQuantum.renderResults($("quantum-results"), QSUM, LAST_HOLDS);
-  const ctrl = await get("/api/quantum/control");
   window.RFQuantum.renderControl($("quantum-control"), ctrl);
+  window.RFQuantum.renderSweep($("quantum-sweep"), sweep);
 }
 $("insight-bars").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) showSlide(+b.dataset.k); });
 

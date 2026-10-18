@@ -346,9 +346,9 @@ function showSlide(i) {
 }
 let QSUM = null;
 async function quantumPanel() {
-  const d = await get("/api/quantum/summary");
+  const [d, ctrl, sweep] = await Promise.all([get("/api/quantum/summary"), get("/api/quantum/control"), get("/api/quantum/sweep")]);
   QSUM = d && !d.empty ? d : null;
-  const list = window.RFQuantum.slides(QSUM, LAST_HOLDS);
+  const list = window.RFQuantum.slides(QSUM, LAST_HOLDS, ctrl && !ctrl.empty ? ctrl : null);
   const key = JSON.stringify(list);
   if (key !== SLIDES.key) {
     const first = !SLIDES.list.length;
@@ -358,8 +358,8 @@ async function quantumPanel() {
     else showSlide(0);
   }
   window.RFQuantum.renderResults($("quantum-results"), QSUM, LAST_HOLDS);
-  const ctrl = await get("/api/quantum/control");
   window.RFQuantum.renderControl($("quantum-control"), ctrl);
+  window.RFQuantum.renderSweep($("quantum-sweep"), sweep);
 }
 $("insight-bars").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) showSlide(+b.dataset.k); });
 

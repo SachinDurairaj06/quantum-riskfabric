@@ -390,8 +390,16 @@ def create_app(redis=None, data_dir: Optional[str] = None, engine_url: Optional[
 
     @app.get("/api/quantum/control")
     async def quantum_control():
-        """The gate calibration self-test (python -m quantum.research.evaluate control), if it was run."""
+        """The positive control (python -m quantum.research.evaluate control), if it was run."""
         data = _read_json(os.path.join(repo_dir, "quantum", "results", "control_summary.json"))
+        if data is None:
+            return JSONResponse({"empty": True}, status_code=404)
+        return data
+
+    @app.get("/api/quantum/sweep")
+    async def quantum_sweep():
+        """Quantum gain against pattern complexity (python -m quantum.research.evaluate sweep), if it was run."""
+        data = _read_json(os.path.join(repo_dir, "quantum", "results", "advantage_sweep.json"))
         if data is None:
             return JSONResponse({"empty": True}, status_code=404)
         return data

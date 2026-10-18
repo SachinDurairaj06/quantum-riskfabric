@@ -183,6 +183,7 @@ async function main() {
   [SUMMARY, QUANTUM] = await Promise.all([getAny("/api/results/summary"), get("/api/quantum/summary")]);
   window.RFQuantum.renderResults($("quantum-results"), QUANTUM && !QUANTUM.empty ? QUANTUM : null);
   getAny("/api/quantum/control").then((c) => window.RFQuantum.renderControl($("quantum-control"), c));
+  getAny("/api/quantum/sweep").then((w) => window.RFQuantum.renderSweep($("quantum-sweep"), w));
   if (!SUMMARY || !SUMMARY.matrix) { renderSetup(SUMMARY || {}); return; }
   $("content").hidden = false;
   $("host").textContent = `${SUMMARY.host || "?"} · ${SUMMARY.arch || "?"} · AI accelerator: ${SUMMARY.nnpa ? "present" : "not present"} · commit ${SUMMARY.commit || "?"} · generated ${SUMMARY.generated_ts ? new Date(SUMMARY.generated_ts * 1000).toLocaleString() : "?"}`;

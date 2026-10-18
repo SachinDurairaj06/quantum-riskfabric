@@ -175,14 +175,21 @@
       return;
     }
     const qp = D.get("QP-1"), k4 = D.get("K4"), k3 = D.get("K3");
+    // A run where every model, the classical score and the shuffled-label control all land on the same recall cannot
+    // separate anything: say so beside the verdict instead of letting "no advantage" read as a measured loss.
+    const recs = D.agg.map((a) => a.recall).filter((v) => v != null);
+    const nTest = ((S.rows || [])[0] || {}).n_test;
+    const flat = recs.length > 2 && Math.max(...recs) - Math.min(...recs) < 1e-9;
+    const power = flat ? `<p class="q-statement" style="margin-top:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--amber-soft);color:#7a4d05">
+        <b>Underpowered run.</b> All ${recs.length} models, including the classical score alone and the shuffled-label control, scored the same ${pct(recs[0])} recall at capacity on ${esc(nTest == null ? "?" : nTest)} test rows, so no comparison could move. This verdict says the data could not separate the models, not that the quantum model lost. Re-export more candidates (<span class="mono">python -m scoring export … --max-rows</span>) and rerun the gate for a real verdict.</p>` : "";
     const bestQ = D.agg.filter((a) => a.kind === "quantum").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
     const bestC = D.agg.filter((a) => a.kind === "classical").sort((a, b) => (b.pr_auc || 0) - (a.pr_auc || 0))[0];
     const when = S.generated_ts ? new Date(S.generated_ts * 1000).toLocaleString() : "";
     el.innerHTML = `<div class="bento">
       <section class="card s-12" aria-label="Quantum gate verdict"><div class="q-hero"><div>
-        <div class="q-tags"><span class="tag ${tone}">${esc(S.verdict)}</span><span class="tag ${S.rerank_allowed ? "ok" : "plain"}">${S.rerank_allowed ? "re-rank allowed" : "shadow only"}</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}${when ? `<span class="tag plain">${esc(when)}</span>` : ""}</div>
+        <div class="q-tags"><span class="tag ${tone}">${esc(S.verdict)}</span>${flat ? `<span class="tag warn">underpowered: ${esc(nTest)} test rows</span>` : ""}<span class="tag ${S.rerank_allowed ? "ok" : "plain"}">${S.rerank_allowed ? "re-rank allowed" : "shadow only"}</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}${when ? `<span class="tag plain">${esc(when)}</span>` : ""}</div>
         <div class="q-verdict">${tone === "ok" ? "The quantum feature map helped on this data" : tone === "bad" ? "This run is void" : "No advantage over matched classical controls"}</div>
-        <p class="q-statement">${esc(S.statement || "")}</p>
+        <p class="q-statement">${esc(S.statement || "")}</p>${power}
         <div class="kv" style="margin-top:16px">
           <div><span>QP-1 recall at capacity</span><b>${pct(qp && qp.recall)}</b></div>
           <div><span>K4 (its matched control)</span><b>${pct(k4 && k4.recall)}</b></div>
@@ -196,9 +203,15 @@
   }
 
   // Slides for the console's insight card.
-  function slides(S, holds) {
+  function slides(S, holds, C) {
     const L = liveStats(holds);
     const out = [];
+    if (C && C.verdict === "PASS") {
+      const qp = digest(C).get("QP-1");
+      const avg = qp && qp.cmp.length ? mean(qp.cmp.map((c) => c.diff)) : null;
+      out.push({ big: pts(avg, 1).replace(" pts", ""), title: "Points of recall QP-1 gains over its classical twin on quantum-structured data",
+        text: "Positive control under the same pre-registered gate: PASS on every seed. Synthetic data, not a bank result; 8 qubits simulated exactly." });
+    }
     if (S && S.verdict) {
       const D = digest(S), qp = D.get("QP-1");
       const avgDiff = qp && qp.cmp.length ? mean(qp.cmp.map((c) => c.diff)) : null;
@@ -214,26 +227,91 @@
     return out;
   }
 
-  // The gate calibration self-test (control_summary.json). Honest framing: it shows the gate machinery runs and its
-  // negative-control/sanity checks behave; it is not tuned to manufacture a PASS.
+  // The positive control (control_summary.json): the SAME pre-registered gate on synthetic data where a quantum edge
+  // exists by construction (labels follow the feature map's 2-qubit correlations). It shows what a gain looks like
+  // when there is one, so the bank-data verdict above means something. Never presented as a bank or fraud result.
   function renderControl(el, C) {
     if (!el) return;
     if (!C || C.empty || !C.verdict) { el.innerHTML = ""; return; }
     const D = digest(C);
-    const sane = D.gate.sanity_ok;
-    const items = [
-      [sane, "Negative control behaves", `N1 (shuffled labels) ${D.n1.map((x) => pct(x)).join(" · ")} vs random ${pct(D.rand)}`],
-      [D.gate.protocol_committed, "Protocol sealed before testing", D.commit ? esc(D.commit) : "-"],
-      [true, "Gate ran end to end", `verdict computed: ${esc(C.verdict)}`],
-    ];
-    el.innerHTML = `<section class="card s-12" aria-label="Gate calibration self-test">
-      <div class="card-h"><h2>Gate calibration self-test <small>labels drawn from the 8-qubit feature map — not bank data, not a fraud result</small></h2>
-        <span class="tag ${sane ? "ok" : "bad"}">${sane ? "machinery sound" : "check failed"}</span></div>
-      <div class="checks" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-        ${items.map(([ok, t, v]) => `<div class="check ${ok ? "ok" : "no"}"><span class="ico" aria-hidden="true">${ok ? "✓" : "✕"}</span><div><b>${esc(t)}</b><span>${esc(v)}</span></div></div>`).join("")}
+    const tone = verdictTone(C.verdict);
+    const qp = D.get("QP-1"), k4 = D.get("K4"), qk = D.get("QK-1"), k1 = D.get("K1");
+    const gains = qp ? qp.cmp.map((c) => c.diff) : [];
+    const avg = mean(gains);
+    const head = tone === "ok" ? `QP-1 gains ${pts(avg, 1)} over its matched classical twin`
+      : tone === "bad" ? "This run is void" : "No gain over the matched classical twin on this benchmark";
+    el.innerHTML = `<div class="bento">
+      <section class="card s-12" aria-label="Where the quantum challenger gains"><div class="q-hero"><div>
+        <div class="q-tags"><span class="tag ${tone}">${esc(C.verdict)}</span><span class="tag violet">quantum-structured benchmark</span><span class="tag plain">synthetic · not bank data</span>${D.commit ? `<span class="tag plain">protocol ${esc(D.commit)}</span>` : ""}</div>
+        <div class="q-verdict">${esc(head)}</div>
+        <p class="q-statement">${esc(C.statement || "")}</p>
+        <div class="kv" style="margin-top:16px">
+          <div><span>QP-1 recall at capacity</span><b>${pct(qp && qp.recall)}</b></div>
+          <div><span>K4, its matched control</span><b>${pct(k4 && k4.recall)}</b></div>
+          <div><span>Gain per seed</span><b style="font-size:15px">${gains.length ? gains.map((g) => pts(g, 1)).join(" · ") : "-"}</b></div>
+          <div><span>QK-1 vs K1 (reported too)</span><b style="font-size:15px">${pts(qk && mean(qk.cmp.map((c) => c.diff)), 1)} <small class="muted">${pct(qk && qk.recall)} vs ${pct(k1 && k1.recall)}</small></b></div>
+        </div></div>${checks(D, C)}</div></section>
+      <section class="card s-5" aria-label="Positive control comparisons"><div class="card-h"><h2>Matched comparisons <small>difference in recall at capacity, 95% paired bootstrap</small></h2></div>${forest(D)}</section>
+      <section class="card s-7" aria-label="Positive control models"><div class="card-h"><h2>Models and controls <small>test split</small></h2></div>${leaderboard(D)}</section>
       </div>
-      <p class="note">${esc(C.label || "")}</p></section>`;
+      <p class="note">${esc(C.label || "")}</p>`;
   }
 
-  window.RFQuantum = { renderResults, renderControl, slides, digest };
+  // Quantum gain against pattern complexity (advantage_sweep.json): from a basic pattern (alpha 0, a plain linear rule a
+  // classical model already captures) to the entangled pattern (alpha 1). Every point is measured with the gate's method.
+  function renderSweep(el, W) {
+    if (!el) return;
+    if (!W || W.empty || !W.points || !W.points.length) { el.innerHTML = ""; return; }
+    const P = W.points.slice().sort((a, b) => a.alpha - b.alpha);
+    const minGain = W.min_gain != null ? W.min_gain : 0.02;
+    const m = (p, k) => mean(p.recall_at_cap[k] || []);
+    const series = [["QP-1", "var(--violet)", ""], ["K4", "var(--blue)", ""], ["QK-1", "var(--violet)", "5 4"], ["K1", "var(--blue)", "5 4"]]
+      .filter(([k]) => P.every((p) => p.recall_at_cap[k]));
+    const W_ = 620, H = 260, L = 46, R = 52, T = 22, B = 46;
+    const X = (a) => L + a * (W_ - L - R), Y = (v) => T + (1 - v) * (H - T - B);
+    let grid = "";
+    [0, 0.25, 0.5, 0.75, 1].forEach((v) => { grid += `<line x1="${L}" x2="${W_ - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 8}" y="${Y(v) + 3.5}" text-anchor="end">${(100 * v).toFixed(0)}%</text>`; });
+    P.forEach((p) => { grid += `<text x="${X(p.alpha)}" y="${H - B + 16}" text-anchor="middle">${p.alpha.toFixed(2)}</text>`; });
+    grid += `<text x="${L}" y="${H - 6}">basic pattern</text><text x="${W_ - R}" y="${H - 6}" text-anchor="end">entangled pattern</text>`;
+    // shade the alphas where QP-1 meets the gate's rule against K4 on every seed
+    let shade = "";
+    const win = P.filter((p) => (p.comparisons["QP-1"] || {}).beats);
+    if (win.length) {
+      const half = P.length > 1 ? (P[1].alpha - P[0].alpha) / 2 : 0.1;
+      const x0 = X(Math.max(0, win[0].alpha - half)), x1 = X(Math.min(1, win[win.length - 1].alpha + half));
+      shade = `<rect x="${x0.toFixed(1)}" y="${T}" width="${(x1 - x0).toFixed(1)}" height="${(H - T - B).toFixed(1)}" fill="var(--green-soft)" opacity=".65"/>
+        <text x="${((x0 + x1) / 2).toFixed(1)}" y="${T - 7}" text-anchor="middle" style="fill:#137a48;font-weight:600">QP-1 beats K4 on every seed</text>`;
+    }
+    const rand = P.map((p) => [X(p.alpha), Y(p.random_order_recall)]);
+    let lines = `<polyline fill="none" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3" points="${rand.map((q) => q.join(",")).join(" ")}"/>`;
+    // the kernel pair first and faint, the gate's pair on top and labelled at the line ends
+    series.slice().sort((a, b) => (b[2] ? 1 : 0) - (a[2] ? 1 : 0)).forEach(([k, col, dash]) => {
+      const pts_ = P.map((p) => [X(p.alpha), Y(m(p, k))]);
+      lines += `<polyline fill="none" stroke="${col}" stroke-width="${dash ? 1.4 : 2.6}" ${dash ? `stroke-dasharray="${dash}" opacity=".45"` : ""} points="${pts_.map((q) => q.map((v) => v.toFixed(1)).join(",")).join(" ")}"/>`;
+      lines += pts_.map((q, i) => `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${dash ? 2.5 : 4}" fill="#fff" stroke="${col}" stroke-width="2" ${dash ? 'opacity=".45"' : ""}><title>${esc(k)} at alpha ${P[i].alpha.toFixed(2)}: ${pct(m(P[i], k))} recall at capacity</title></circle>`).join("");
+      if (!dash) { const e = pts_[pts_.length - 1]; lines += `<text class="lbl" x="${(e[0] + 8).toFixed(1)}" y="${(e[1] + 4).toFixed(1)}" style="fill:${col};font-weight:600">${esc(k)}</text>`; }
+    });
+    const chart = `<div class="forest"><svg viewBox="0 0 ${W_} ${H}" role="img" aria-label="Recall at capacity against pattern complexity for the quantum models and their matched classical controls">${shade}${grid}${lines}</svg></div>
+      <div class="legend">${series.map(([k, col, dash]) => `<span><i style="background:${col};${dash ? "opacity:.55" : ""}"></i>${esc(k)}${dash ? " (dashed)" : ""}</span>`).join("")}<span><i style="background:var(--faint)"></i>random order</span></div>`;
+    const rows = P.map((p) => {
+      const c = (p.comparisons["QP-1"] || {}).by_seed || [];
+      const g = mean(c.map((x) => x.diff));
+      const lo = c.length ? Math.min(...c.map((x) => x.ci95[0])) : null, hi = c.length ? Math.max(...c.map((x) => x.ci95[1])) : null;
+      const ok = (p.comparisons["QP-1"] || {}).beats;
+      const ck = (p.comparisons["QK-1"] || {}).by_seed || [];
+      const sg = (v) => (v == null ? "-" : (v >= 0 ? "+" : "−") + Math.abs(100 * v).toFixed(1));
+      return `<tr><td class="num">${p.alpha.toFixed(2)}</td><td class="num">${pct(m(p, "QP-1"))}</td><td class="num">${pct(m(p, "K4"))}</td>
+        <td class="num"><b style="color:${ok ? "var(--green)" : "var(--ink-2)"}">${sg(g)}</b></td><td class="num">${lo == null ? "-" : sg(lo) + " … " + sg(hi)}</td>
+        <td><span class="tag ${ok ? "ok" : "plain"}">${ok ? "every seed" : "no"}</span></td>
+        <td class="num">${ck.length ? sg(mean(ck.map((x) => x.diff))) : "-"}</td></tr>`;
+    }).join("");
+    el.innerHTML = `<div class="bento">
+      <section class="card s-6" aria-label="Quantum gain against pattern complexity"><div class="card-h"><h2>Quantum gain against pattern complexity <small>recall at analyst capacity, mean of ${esc((W.seeds || []).length)} seeds</small></h2></div>${chart}</section>
+      <section class="card s-6" aria-label="Gain table"><div class="card-h"><h2>QP-1 minus K4, in points <small>rule: ≥ +${(100 * minGain).toFixed(0)} on every seed, interval above 0</small></h2></div>
+        <div class="scroll" style="max-height:none"><table style="white-space:nowrap"><thead><tr><th class="num">alpha</th><th class="num">QP-1</th><th class="num">K4</th><th class="num">gain</th><th class="num">95% range</th><th>rule met</th><th class="num">QK-1 − K1</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="note">alpha 0 is a basic pattern, alpha 1 the entangled one. Gain is the mean of the seeds; the range spans every seed's 95% interval.</p></section>
+      </div><p class="note">${esc(W.label || "")} Command: <span class="mono">${esc(W.command || "")}</span></p>`;
+  }
+
+  window.RFQuantum = { renderResults, renderControl, renderSweep, slides, digest };
 })();

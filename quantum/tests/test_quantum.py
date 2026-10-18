@@ -236,3 +236,53 @@ def test_control_data_has_feature_map_structure(tmp_path):
     assert set(df["split"]) == {"val", "test"}
     capdf = pd.read_csv(cap)
     assert {"day", "transactions", "capacity", "positives"} <= set(capdf.columns) and capdf["positives"].sum() > 0
+
+
+def test_control_labels_live_in_the_pipelines_input_frame(tmp_path):
+    """Regression: the control's labels were computed in a PCA frame the pipeline never sees (standardised independent
+    columns leave PCA with arbitrary axes), so even the true model could not learn them. The tuning slice (first 70% of
+    validation) and the test fit (all of validation) must now give the same circuit inputs, and the projected quantum
+    features in that frame must predict the label."""
+    import pandas as pd
+    from sklearn.linear_model import LogisticRegression
+
+    from quantum.core import circuit
+    from quantum.core.preprocess import Preprocessor
+    from quantum.research import evaluate, metrics
+    cand, _ = evaluate.control_data(str(tmp_path), rows=4000, seed=11, alpha=1.0)
+    df = pd.read_csv(cand)
+    cols = [c for c in df.columns if c.startswith("f_")]
+    X, y, val = df[cols].to_numpy(), df["label"].to_numpy(), (df["split"] == "val").to_numpy()
+    vi = np.flatnonzero(val)
+    U_val = Preprocessor().fit(X[val], cols).transform(X)
+    U_fit = Preprocessor().fit(X[vi[: int(len(vi) * 0.7)]], cols).transform(X)
+    assert np.abs(U_val - U_fit).max() < 0.2
+    phi = circuit.projected_features(U_val, 0.5)
+    lr = LogisticRegression(max_iter=5000).fit(phi[val], y[val])
+    assert metrics.pr_auc(y[~val], lr.decision_function(phi[~val])) > 0.8
+
+
+def test_control_alpha_moves_from_basic_to_entangled(tmp_path):
+    import pandas as pd
+
+    from quantum.research import evaluate
+    basic, _ = evaluate.control_data(str(tmp_path / "a0"), rows=2000, seed=3, alpha=0.0)
+    ent, _ = evaluate.control_data(str(tmp_path / "a1"), rows=2000, seed=3, alpha=1.0)
+    lb, le = pd.read_csv(basic)["label"].to_numpy(), pd.read_csv(ent)["label"].to_numpy()
+    assert 0.06 < lb.mean() < 0.12 and 0.06 < le.mean() < 0.12
+    assert (lb != le).mean() > 0.05                      # the two patterns flag different payments
+    with pytest.raises(ValueError):
+        evaluate.control_data(str(tmp_path / "bad"), rows=500, alpha=1.5)
+
+
+def test_sweep_writes_matched_comparisons(tmp_path, monkeypatch):
+    from quantum.research import evaluate
+    monkeypatch.setattr(evaluate, "RESULTS", str(tmp_path))
+    assert evaluate.main(["sweep", "--rows", "1500", "--alphas", "0", "1", "--n-boot", "50"]) == 0
+    out = json.loads((tmp_path / "advantage_sweep.json").read_text())
+    assert [p["alpha"] for p in out["points"]] == [0.0, 1.0]
+    for p in out["points"]:
+        assert set(p["comparisons"]) == {"QP-1", "QK-1"}
+        assert len(p["comparisons"]["QP-1"]["by_seed"]) == len(evaluate.SEEDS)
+        assert all(len(v) == len(evaluate.SEEDS) for v in p["recall_at_cap"].values())
+    assert "NOT bank data" in out["label"]
