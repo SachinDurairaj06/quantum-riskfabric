@@ -202,7 +202,8 @@ def test_shield_hold_gets_shadow_score_and_features(redis):
 def test_invalid_body_is_400(redis):
     aredis, _ = redis
     with client_for(make_cfg(), fake_scoring(), FakeBank(), aredis) as c:
-        assert c.post("/pay", json=dict(BODY, txn_id="bad")).status_code == 400
+        assert c.post("/pay", json=dict(BODY, txn_id="bad id!")).status_code == 400   # spaces/punctuation rejected
+        assert c.post("/pay", json=dict(BODY, txn_id="sim-1760-5")).status_code == 200  # other sources' ids accepted
         assert c.post("/pay", content=b"not json", headers={"content-type": "application/json"}).status_code == 400
 
 

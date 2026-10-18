@@ -42,7 +42,7 @@ class Payment(BaseModel):
 
     model_config = {"extra": "ignore"}
 
-    txn_id: str = Field(pattern=r"^t-\d{9}$")
+    txn_id: str = Field(pattern=r"^[A-Za-z0-9._-]{1,64}$")   # any sane id (lab t-NNN, or other sources like sim-...-N)
     ts: float
     from_acct: str = Field(min_length=1)
     to_acct: str = Field(min_length=1)

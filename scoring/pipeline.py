@@ -157,7 +157,7 @@ def _report(source, df, X, gfp, raw, is_test, y, hold_at) -> dict:
     yte = y[is_test]
     gfp_te = gfp.predict(X[is_test])
     raw_te = raw.predict(X[is_test][:, _cols(RAW_FEATURES)])
-    return {"source": source, "synthetic": source != "hi_small",
+    return {"source": source, "synthetic": source not in ("hi_small", "cards"),
             "rows": {"total": int(len(df)), "train": int((df["split"] == "train").sum()),
                      "val": int((df["split"] == "val").sum()), "test": int(is_test.sum())},
             "laundering": {"total": int(y.sum()), "test": int(yte.sum())},
@@ -202,4 +202,4 @@ def export(source: str, path: str, out_dir: str, model_dir: str, max_rows: Optio
             "val_candidates": int((candidates["split"] == "val").sum()),
             "test_candidates": int((candidates["split"] == "test").sum()),
             "capacity": cap_path, "test_days": int(len(cap)), "test_positives": int(cap["positives"].sum()),
-            "synthetic": source != "hi_small"}
+            "synthetic": source not in ("hi_small", "cards")}
