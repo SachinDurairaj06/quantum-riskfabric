@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RiskFabric Console (demo data)</title>
+<title>RiskFabric Console (demo)</title>
 <style>/* RiskFabric console + scoreboard. Plain CSS, no frameworks, no external fonts.
    Soft analytics theme: a grey canvas holding one off-white app frame, white cards with a hairline border and a
    whisper of shadow, a black pill for the active nav item, light display numerals, hatched blue bars, dot matrices,
@@ -471,6 +471,7 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
 
   <div class="section-h" id="quantum"><h2>Quantum challenger results</h2><p>Pre-registered gate against matched classical controls. Research only: simulated 8 qubits, shadow only.</p></div>
   <div id="quantum-results"></div>
+  <div id="quantum-control" style="margin-top:14px"></div>
 </div>
 <script>
 // DEMO DATA FEED: sample numbers generated in the browser, not a measurement.
@@ -1051,6 +1052,599 @@ const QSUM = {
   }
  ],
  "gate_file": "quantum/GATE.md"
+}, QCTRL = {
+ "generated_ts": 1792316412.5086823,
+ "verdict": "NO ADVANTAGE FOUND",
+ "statement": "No advantage found. On the bank data, our 8-qubit quantum challenger did not beat classical controls with the same inputs (details and intervals in RESULTS.md).",
+ "rerank_allowed": false,
+ "random_order_recall": 0.10020716289454597,
+ "rows": [
+  {
+   "model": "QK-1",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.8867562380038387,
+   "pr_auc": 0.9145224576331297,
+   "precision_at_cap": 0.7687188019966722,
+   "control": "K1",
+   "diff_vs_control": 0.017274472168905874,
+   "diff_ci95": [
+    -0.015355086372360827,
+    0.030710172744721764
+   ],
+   "ms_per_item": 0.21901881616668106,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QP-1",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.6391554702495201,
+   "pr_auc": 0.6487057080350463,
+   "precision_at_cap": 0.5540765391014975,
+   "control": "K4",
+   "diff_vs_control": -0.09596928982725528,
+   "diff_ci95": [
+    -0.13248560460652592,
+    -0.05950095969289826
+   ],
+   "ms_per_item": 0.15355108199999754,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QP-1a",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.6372360844529751,
+   "pr_auc": 0.648126540134671,
+   "precision_at_cap": 0.5524126455906821,
+   "control": "K2",
+   "diff_vs_control": -0.10364683301343569,
+   "diff_ci95": [
+    -0.1324376199616123,
+    -0.05950095969289826
+   ],
+   "ms_per_item": 0.14632433883332396,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K0",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.7312859884836852,
+   "pr_auc": 0.7322894947220482,
+   "precision_at_cap": 0.6339434276206323,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.00013168733331288726,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K1",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.8694817658349329,
+   "pr_auc": 0.908727501961826,
+   "precision_at_cap": 0.7537437603993344,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.010618146833318557,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K2",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.7408829174664108,
+   "pr_auc": 0.7260594088722471,
+   "precision_at_cap": 0.6422628951747088,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.00037817183332814847,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K4",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.7351247600767754,
+   "pr_auc": 0.7258862624433324,
+   "precision_at_cap": 0.6372712146422629,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.00035349449998041865,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K3",
+   "seed": 1,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.10556621880998081,
+   "pr_auc": 0.09178557683614452,
+   "precision_at_cap": 0.09151414309484193,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 5.571666482258782e-07,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "N1",
+   "seed": 1,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.12092130518234165,
+   "pr_auc": 0.06791296878775513,
+   "precision_at_cap": 0.033277870216306155,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": null,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QK-1",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.8618042226487524,
+   "pr_auc": 0.9096450860928139,
+   "precision_at_cap": 0.7470881863560732,
+   "control": "K1",
+   "diff_vs_control": -0.009596928982725461,
+   "diff_ci95": [
+    -0.028790786948176605,
+    0.013435700575815779
+   ],
+   "ms_per_item": 0.2387741328333277,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QP-1",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.6449136276391555,
+   "pr_auc": 0.6461779316975187,
+   "precision_at_cap": 0.5590682196339434,
+   "control": "K4",
+   "diff_vs_control": -0.07677543186180424,
+   "diff_ci95": [
+    -0.10940499040307106,
+    -0.03838771593090207
+   ],
+   "ms_per_item": 0.15029097733330823,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QP-1a",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.6410748560460653,
+   "pr_auc": 0.6473380082998876,
+   "precision_at_cap": 0.5557404326123128,
+   "control": "K2",
+   "diff_vs_control": -0.08445297504798466,
+   "diff_ci95": [
+    -0.11324376199616115,
+    -0.04606525911708248
+   ],
+   "ms_per_item": 0.14040685916669796,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K0",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.727447216890595,
+   "pr_auc": 0.72580936348746,
+   "precision_at_cap": 0.6306156405990017,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.00012538016668865262,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K1",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.8714011516314779,
+   "pr_auc": 0.90886758078033,
+   "precision_at_cap": 0.7554076539101497,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.011442548999980318,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K2",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.72552783109405,
+   "pr_auc": 0.7271508710887228,
+   "precision_at_cap": 0.6289517470881864,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.0004520733333492899,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K4",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.7216890595009597,
+   "pr_auc": 0.726454879699142,
+   "precision_at_cap": 0.6256239600665557,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.0004404500000039964,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K3",
+   "seed": 2,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.10556621880998081,
+   "pr_auc": 0.09178557683614452,
+   "precision_at_cap": 0.09151414309484193,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 7.311666649911785e-07,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "N1",
+   "seed": 2,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.09856046065259116,
+   "pr_auc": 0.06376737133423685,
+   "precision_at_cap": 0.029950083194675542,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": null,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QK-1",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.8714011516314779,
+   "pr_auc": 0.9142514119714487,
+   "precision_at_cap": 0.7554076539101497,
+   "control": "K1",
+   "diff_vs_control": -0.0038387715930902067,
+   "diff_ci95": [
+    -0.02495201535508629,
+    0.017274472168905874
+   ],
+   "ms_per_item": 0.27547342166667477,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QP-1",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.6353166986564299,
+   "pr_auc": 0.6473597703250463,
+   "precision_at_cap": 0.5507487520798668,
+   "control": "K4",
+   "diff_vs_control": -0.07293666026871404,
+   "diff_ci95": [
+    -0.09404990403071023,
+    -0.03454894433781186
+   ],
+   "ms_per_item": 0.15410192966665667,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "QP-1a",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.6391554702495201,
+   "pr_auc": 0.6471529663810422,
+   "precision_at_cap": 0.5540765391014975,
+   "control": "K2",
+   "diff_vs_control": -0.06717850287907867,
+   "diff_ci95": [
+    -0.09404990403071023,
+    -0.03454894433781186
+   ],
+   "ms_per_item": 0.15780520933333264,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K0",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.7332053742802304,
+   "pr_auc": 0.7301229723381026,
+   "precision_at_cap": 0.6356073211314476,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.0001823156666584206,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K1",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.8752399232245681,
+   "pr_auc": 0.916428363962207,
+   "precision_at_cap": 0.7587354409317804,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.011425172833355646,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K2",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.7063339731285988,
+   "pr_auc": 0.6842964945995084,
+   "precision_at_cap": 0.6123128119800333,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.00036380249999486597,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K4",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "u8+s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.708253358925144,
+   "pr_auc": 0.6848766587523633,
+   "precision_at_cap": 0.6139767054908486,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 0.0003668581666715909,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "K3",
+   "seed": 3,
+   "backend": "classical",
+   "shots": null,
+   "inputs": "s",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.10556621880998081,
+   "pr_auc": 0.09178557683614452,
+   "precision_at_cap": 0.09151414309484193,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": 3.70666687861861e-07,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  },
+  {
+   "model": "N1",
+   "seed": 3,
+   "backend": "numpy-statevector",
+   "shots": null,
+   "inputs": "u8",
+   "n_train": 2795,
+   "n_test": 6000,
+   "recall_at_cap": 0.0989443378119002,
+   "pr_auc": 0.1263076227354204,
+   "precision_at_cap": 0.16139767054908485,
+   "control": null,
+   "diff_vs_control": null,
+   "diff_ci95": null,
+   "ms_per_item": null,
+   "qpu_seconds": 0,
+   "protocol_commit": "sealed-7bf915d5dc80",
+   "command": "python -m quantum.research.evaluate test --seed 20250",
+   "commit": "fdfa6cc"
+  }
+ ],
+ "gate_file": "quantum/GATE.md",
+ "gate": {
+  "qp1_beats": false,
+  "qk1_beats": false,
+  "sanity_ok": true,
+  "protocol_committed": true
+ },
+ "n1_recall": [
+  0.12092130518234165,
+  0.09856046065259116,
+  0.0989443378119002
+ ],
+ "protocol_commit": "sealed-7bf915d5dc80",
+ "min_gain": 0.02,
+ "sanity_tolerance": 0.03,
+ "worker": null,
+ "positive_control": true,
+ "label": "Positive control \u2014 synthetic data with a 2-qubit correlation. NOT bank data, NOT a fraud result."
 };
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const edge = {}, dec = {}, threat = {};
@@ -1069,9 +1663,9 @@ function series(store, start, keys){ const hi=Math.floor(Date.now()/1000), w=Mat
   for(let s=start;s<=hi;s++){ const b=store[s]; if(!b) continue; const col=Math.floor((s-start)/w); const row=out[col]||(out[col]={ts:start+col*w}); keys.forEach(([k,i])=>row[k]=(row[k]||0)+b[i]); }
   return Object.keys(out).sort((a,b)=>a-b).map(k=>out[k]); }
 const holds = Array.from({length:9},(_,k)=>({txn_id:"t-"+String(900000+k).padStart(9,"0"), queue_score:.95-k*.04, score:+(.95-k*.04).toFixed(3),
-  amount:+(800+rnd()*8000).toFixed(2), currency:"USD", from_acct:"acct-"+Math.floor(rnd()*999), to_acct:"pay-"+Math.floor(rnd()*9999),
-  tier:k%2?"high":"medium", cluster:k%3?null:"c-17", stand_in:k===4, reasons:["fan-out burst","new counterparty"].concat(k%3?[]:["cluster c-17"]),
-  note:"Held: fan-out burst, new counterparty; account tier "+(k%2?"high":"medium")+".",
+  amount:+(800+rnd()*8000).toFixed(2), currency:"USD", from_acct:"card-"+Math.floor(rnd()*400)+"-0", to_acct:"merchant-"+Math.floor(rnd()*9999),
+  tier:k%2?"high":"medium", cluster:k%3?null:"c-17", stand_in:k===4, reasons:["rapid sending","new counterparty"].concat(k%3?[]:["cluster c-17"]),
+  note:"Held: rapid sending, new counterparty; account tier "+(k%2?"high":"medium")+".",
   challenger: k===6?null:{score:+(.3+rnd()*.6).toFixed(3),status:"ok",backend:"numpy-statevector",model:"qp1-v1"}}));
 function api(path){
   const u=new URL(path,location.href), sec=+(u.searchParams.get("seconds")||60), n=+(u.searchParams.get("n")||60), now=Math.floor(Date.now()/1000), start=now-sec;
@@ -1079,9 +1673,9 @@ function api(path){
   if(p==="/api/meta") return {system:"shield"};
   if(p==="/api/threat"){ const out=[]; for(let s=now-n+1;s<=now;s++){ const lv=threat[s]||"NORMAL"; out.push({ts:s,level:lv,n_clusters:lv==="NORMAL"?0:1,clusters:lv==="NORMAL"?[]:[{id:"c-17",key_type:"fingerprint",action:"throttle",share:.41,risk:.91}]}); } return {entries:out}; }
   if(p==="/api/edge"){ const t={passed:0,throttled:0,blocked:0}; for(let s=start;s<=now;s++){const b=edge[s]; if(b){t.passed+=b[0];t.throttled+=b[1];t.blocked+=b[2];}} return {totals:t,seconds:sec,series:series(edge,start,[["passed",0],["throttled",1],["blocked",2]])}; }
-  if(p==="/api/decisions"){ const c={ALLOW:0,VERIFY:0,HOLD:0}; let si=0,tot=0,h60=0,t60=0; for(let s=start;s<=now;s++){const b=dec[s]; if(b){c.ALLOW+=b[0];c.VERIFY+=b[1];c.HOLD+=b[2];si+=b[3];tot+=b[5];}}
+  if(p==="/api/decisions"){ const cc={ALLOW:0,VERIFY:0,HOLD:0}; let si=0,tot=0,h60=0,t60=0; for(let s=start;s<=now;s++){const b=dec[s]; if(b){cc.ALLOW+=b[0];cc.VERIFY+=b[1];cc.HOLD+=b[2];si+=b[3];tot+=b[5];}}
     for(let s=now-60;s<=now;s++){const b=dec[s]; if(b){h60+=b[2];t60+=b[5];}} const hr=t60?100*h60/t60:0;
-    return {counts:c,paths:{engine:tot-si,stand_in:si},stand_in:si,deadline_miss:0,total:tot,seconds:sec,series:series(dec,start,[["ALLOW",0],["VERIFY",1],["HOLD",2]]),
+    return {counts:cc,paths:{engine:tot-si,stand_in:si},stand_in:si,deadline_miss:0,total:tot,seconds:sec,series:series(dec,start,[["ALLOW",0],["VERIFY",1],["HOLD",2]]),
       latency_ms:{p50:+(14+rnd()*4).toFixed(1),p95:+(26+rnd()*4).toFixed(1),p99:+(31+rnd()*6).toFixed(1)},hold_rate_60s_pct:+hr.toFixed(3),hold_cap_pct:2,hold_alert:hr>2}; }
   if(p==="/api/perimeter") return {reachable:true,received:182000,passed:151200,stopped:{cdn:{rate:21000},waf:{"sql injection":340},gateway:{auth:9460}}};
   if(p==="/api/bank") return {books:{posted_count:41230,posted_value:5210442,fail_open_count:0},engine_p99_ms:12.4,recent_timeouts:0,recent_fail_open:0,reachable:true};
@@ -1089,6 +1683,7 @@ function api(path){
   if(p==="/api/shield") return {pairs:40210,agreement:.962,shadow_would_hold:31,shadow_would_release:12};
   if(p==="/api/holds") return {holds,challenger_label:"Quantum challenger (research, simulated 8 qubits); does not affect decisions"};
   if(p==="/api/quantum/summary") return QSUM;
+  if(p==="/api/quantum/control") return QCTRL || {empty:true};
   return null;
 }
 window.fetch = async (path, opt) => {
@@ -1312,7 +1907,28 @@ window.fetch = async (path, opt) => {
     return out;
   }
 
-  window.RFQuantum = { renderResults, slides, digest };
+  // The gate calibration self-test (control_summary.json). Honest framing: it shows the gate machinery runs and its
+  // negative-control/sanity checks behave; it is not tuned to manufacture a PASS.
+  function renderControl(el, C) {
+    if (!el) return;
+    if (!C || C.empty || !C.verdict) { el.innerHTML = ""; return; }
+    const D = digest(C);
+    const sane = D.gate.sanity_ok;
+    const items = [
+      [sane, "Negative control behaves", `N1 (shuffled labels) ${D.n1.map((x) => pct(x)).join(" · ")} vs random ${pct(D.rand)}`],
+      [D.gate.protocol_committed, "Protocol sealed before testing", D.commit ? esc(D.commit) : "-"],
+      [true, "Gate ran end to end", `verdict computed: ${esc(C.verdict)}`],
+    ];
+    el.innerHTML = `<section class="card s-12" aria-label="Gate calibration self-test">
+      <div class="card-h"><h2>Gate calibration self-test <small>labels drawn from the 8-qubit feature map — not bank data, not a fraud result</small></h2>
+        <span class="tag ${sane ? "ok" : "bad"}">${sane ? "machinery sound" : "check failed"}</span></div>
+      <div class="checks" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        ${items.map(([ok, t, v]) => `<div class="check ${ok ? "ok" : "no"}"><span class="ico" aria-hidden="true">${ok ? "✓" : "✕"}</span><div><b>${esc(t)}</b><span>${esc(v)}</span></div></div>`).join("")}
+      </div>
+      <p class="note">${esc(C.label || "")}</p></section>`;
+  }
+
+  window.RFQuantum = { renderResults, renderControl, slides, digest };
 })();
 </script><script>// RiskFabric console: polls the read-only /api routes and draws small inline SVG charts. No libraries.
 "use strict";
@@ -1674,6 +2290,8 @@ async function quantumPanel() {
     else showSlide(0);
   }
   window.RFQuantum.renderResults($("quantum-results"), QSUM, LAST_HOLDS);
+  const ctrl = await get("/api/quantum/control");
+  window.RFQuantum.renderControl($("quantum-control"), ctrl);
 }
 $("insight-bars").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (b) showSlide(+b.dataset.k); });
 
